@@ -49,4 +49,9 @@ export class HomePage {
         }
     }
 
+    // this was added by user nglad2 branch
+    async nglad2Userfunction():Promise<void>{
+        
+    }
+
 }
