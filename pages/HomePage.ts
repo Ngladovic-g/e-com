@@ -49,4 +49,8 @@ export class HomePage {
         }
     }
 
+    //this was added by use nglad3
+    async userNglad3AddedThis():Promise<void>{
+       
+    }
 }
