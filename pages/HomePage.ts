@@ -53,4 +53,9 @@ export class HomePage {
     async userNglad3AddedThis():Promise<void>{
        
     }
+    // this was added by user nglad2 branch
+    async nglad2Userfunction():Promise<void>{
+        
+    }
+
 }
