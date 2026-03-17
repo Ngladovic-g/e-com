@@ -50,15 +50,8 @@ export class HomePage {
     }
 
     // this was added by user nglad2 branch
-    async nglad2Userfunction():Promise<RegistrationPage>{
-        try {
-            await this.registerLink.click();
-            return new RegistrationPage(this.page);
-        }
-        catch (error) {
-            console.log(`Expception while clicking on Registration link: ${error}`)
-            throw error;
-        }
+    async nglad2Userfunction():Promise<void>{
+        
     }
 
 }
