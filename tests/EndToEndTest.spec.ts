@@ -20,7 +20,7 @@ test('Execute end to end test @end-to-end', async ({ page }) => {
     
 })
 
-test.only('Warring message', async ({ page }) => {
+test('Warring message', async ({ page }) => {
 
     const config = new testConfig();
 
