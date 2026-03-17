@@ -17,7 +17,7 @@ test('Execute end to end test @end-to-end', async ({ page }) => {
 
     await performeLogout(page);
     console.log("User loged out and is on Home Page")
-    
+
 })
 
 test('Warring message', async ({ page }) => {
@@ -29,7 +29,7 @@ test('Warring message', async ({ page }) => {
     await warningMsgForRegistration(page);
     console.log("FIrst name warning message displayed")
 
-   
+
 })
 
 
@@ -69,7 +69,7 @@ async function performeLogout(page: Page) {
 
     //const accountPage = new AccountPage(page);
     expect(await accountPage.isOnAccountPage()).toBe(true);
-    
+
 
     const logoutPage: LogoutPage = await accountPage.clickLogoutBtn()
     expect(await logoutPage.isContinueBtnVisible()).toBe(true)
@@ -79,21 +79,20 @@ async function performeLogout(page: Page) {
 
 }
 
-async function warningMsgForRegistration(page:Page) {
+async function warningMsgForRegistration(page: Page) {
 
     const homePage = new HomePage(page);
     await homePage.clickMyAccount();
-    const registrationPage: RegistrationPage = 
-        await homePage.clickRegister()
+    const registrationPage: RegistrationPage = await homePage.clickRegister()
 
     //const registrationPage = new RegistrationPage(page);
-    
+
     //expect(await registrationPage.isOnRegistartionPage()).toBeTruthy();
 
     await registrationPage.clickContinue();
     await registrationPage.warningMsgFirstName()
-    
 
 
-    
+
+
 }
