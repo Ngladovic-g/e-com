@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test:all": "playwright test --grep @end-to-end"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
