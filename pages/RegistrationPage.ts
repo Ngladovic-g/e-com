@@ -20,6 +20,15 @@ export class RegistrationPage {
     private readonly congratMsg: Locator;
     private readonly continueAfterRegistration: Locator;
     private readonly firstNameWarningMsg: Locator;
+    private readonly lastNameWarningMsg: Locator;
+    private readonly emailWarningMsg: Locator;
+    private readonly telephoneWarningMsg: Locator;
+    private readonly pwdWarningMsg: Locator;
+    private readonly confirmPwdField: Locator;
+    private readonly pwdConfirmWarningMsg: Locator;
+    private  readonly subscribeYes: Locator;
+
+
 
 
     constructor(page: Page) {
@@ -36,7 +45,15 @@ export class RegistrationPage {
         this.congratMsg = page.locator("div>h1:has-text('Your Account Has Been Created!')");
         this.continueAfterRegistration = page.locator("a:has-text('Continue')");
         //this.firstNameWarningMsg = page.getByText('First Name must be between 1 and 32 characters!', { exact: true })
-        this.firstNameWarningMsg = page.locator(".text-danger").nth(0)
+        this.firstNameWarningMsg = page.locator(".text-danger").nth(0);
+        this.lastNameWarningMsg = page.getByText('Last Name must be between 1 and 32 characters!');
+        this.emailWarningMsg = page.getByText("E-Mail Address does not appear to be valid!");
+        this.telephoneWarningMsg = page.getByText("Telephone must be between 3 and 32 characters!");
+        this.pwdWarningMsg = page.getByText("Password must be between 4 and 20 characters!");
+        this.pwdConfirmWarningMsg = page.getByText("Password confirmation does not match password!");
+        this.confirmPwdField = page.locator("#input-confirm");
+        this.subscribeYes = page.locator("input[type=radio]").nth(1);
+    
     }
 
     async isOnRegistartionPage(): Promise<string | null> {
@@ -108,11 +125,49 @@ export class RegistrationPage {
             this.clickContinue();
             }
 
-    async warningMsgFirstName():Promise<void>{
+    async warningMsgFirstName():Promise<string>{
 
-       const warning =  await this.firstNameWarningMsg.innerText();
+       const fNwarning =  
+       await this.firstNameWarningMsg.innerText();
+       return fNwarning;
       
-       expect(warning).toContain("First Name must be between 1 and 32 characters!")
+       
        // console.log(warning);
+    }
+
+    async warningMsgLastName():Promise<string>{
+        const lNwarning = await this.lastNameWarningMsg.innerText();
+        return lNwarning;
+
+    }
+
+    async warningMsEmail():Promise<string>{
+        const warningEmail = await this.emailWarningMsg.innerHTML();
+        return warningEmail;
+    }
+
+    async warningMsgTelephone():Promise<string>{
+        const warningTelephone = await this.telephoneWarningMsg.innerText();
+        return warningTelephone;
+    }
+    async warningMsgPwd():Promise<string>{
+        const warningPwd = await this.pwdWarningMsg.innerText();
+        return warningPwd;
+    }
+
+    async showMsgToConfirmPwdField():Promise<void>{
+         await this.confirmPwdField.fill('.')
+
+    }
+    async warningMsgConfirmPwd():Promise<string>{
+    const warningConfirmPwd = await this.pwdConfirmWarningMsg.innerText();
+    return warningConfirmPwd;
+
+    }
+
+    async subscribeToYes():Promise<void>{
+        const isChecked =  this.subscribeYes;
+        isChecked.check()
+        await expect(isChecked).toBeChecked()
     }
 }
