@@ -87,7 +87,7 @@ async function warningMsgForRegistration(page: Page) {
 
     //const registrationPage = new RegistrationPage(page);
 
-    //expect(await registrationPage.isOnRegistartionPage()).toBeTruthy();
+    expect(await registrationPage.isOnRegistartionPage()).toContain("Register Account");
 
     await registrationPage.clickContinue();
     await registrationPage.warningMsgFirstName()
