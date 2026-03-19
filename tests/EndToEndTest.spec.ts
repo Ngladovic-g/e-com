@@ -6,7 +6,7 @@ import { RandomDataUtils } from "../utils/randomDataGenerator"
 import { AccountPage } from '../pages/AccountPage';
 import { LogoutPage } from '../pages/LogoutPage';
 
-test.only('Execute end to end test @end-to-end', async ({ page }) => {
+test('Execute end to end test @end-to-end', async ({ page }) => {
 
     const config = new testConfig();
 
