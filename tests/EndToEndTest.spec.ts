@@ -6,7 +6,7 @@ import { RandomDataUtils } from "../utils/randomDataGenerator"
 import { AccountPage } from '../pages/AccountPage';
 import { LogoutPage } from '../pages/LogoutPage';
 
-test('Execute end to end test @end-to-end', async ({ page }) => {
+test.only('Execute end to end test @end-to-end', async ({ page }) => {
 
     const config = new testConfig();
 
@@ -27,7 +27,7 @@ test('Warring message @end-to-end' , async ({ page }) => {
     page.goto(config.baseUrl);
 
     await warningMsgForRegistration(page);
-    console.log("FIrst name warning message displayed")
+    console.log("First name warning message displayed")
 
 
 })
@@ -52,6 +52,8 @@ async function createNewUser(page: Page): Promise<string> {
     await registrationPage.setPhoneNumber(RandomDataUtils.getPhoneNumber());
     await registrationPage.setPassword(password);
     await registrationPage.cnfPassword(password);
+    await registrationPage.subscribeToYes();
+    
     await registrationPage.confirmPrivacy();
     await registrationPage.clickContinue();
     const newUserCreated = await registrationPage.accCreatedMsg()
@@ -88,9 +90,23 @@ async function warningMsgForRegistration(page: Page) {
     //const registrationPage = new RegistrationPage(page);
 
     expect(await registrationPage.isOnRegistartionPage()).toContain("Register Account");
-
+    
+    await registrationPage.showMsgToConfirmPwdField();
     await registrationPage.clickContinue();
-    await registrationPage.warningMsgFirstName()
+
+    const warningConfirmPwd =await registrationPage.warningMsgConfirmPwd();
+    expect(warningConfirmPwd).toContain("Password confirmation does not match password!");
+
+
+    const fNwarning = await registrationPage.warningMsgFirstName();
+    expect(fNwarning).toContain("First Name must be between 1 and 32 characters!");
+
+    expect(await registrationPage.warningMsgLastName()).toContain("Last Name must be between 1 and 32 characters");
+    
+    expect(await registrationPage.warningMsEmail()).toContain("E-Mail Address does not appear to be valid!");
+    expect(await registrationPage.warningMsgTelephone()).toContain("Telephone must be between 3 and 32 characters!");
+    expect(await registrationPage.warningMsgPwd()).toContain("Password must be between 4 and 20 characters!");
+
 
 
 
