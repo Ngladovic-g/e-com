@@ -39,15 +39,12 @@ export class RegistrationPage {
         this.firstNameWarningMsg = page.locator(".text-danger").nth(0)
     }
 
-    async isOnRegistartionPage(): Promise<boolean> {
-        try {
-            const onRegistrationpage = await this.registrationTitle.isVisible();
+    async isOnRegistartionPage(): Promise<string | null> {
+        
+            const onRegistrationpage = await this.registrationTitle.textContent();
             return onRegistrationpage;
-        }
-        catch (error) {
-            console.log(`Error checking Registartion page: ${error}`);
-            return false
-        }
+        
+        
     }
 
     async setFirstName(fname: string): Promise<void> {
