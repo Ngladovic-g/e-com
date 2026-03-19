@@ -26,7 +26,8 @@ export class RegistrationPage {
     private readonly pwdWarningMsg: Locator;
     private readonly confirmPwdField: Locator;
     private readonly pwdConfirmWarningMsg: Locator;
-    private  readonly subscribeYes: Locator;
+    private readonly checkYesSubscribe: Locator;
+    
 
 
 
@@ -52,8 +53,9 @@ export class RegistrationPage {
         this.pwdWarningMsg = page.getByText("Password must be between 4 and 20 characters!");
         this.pwdConfirmWarningMsg = page.getByText("Password confirmation does not match password!");
         this.confirmPwdField = page.locator("#input-confirm");
-        this.subscribeYes = page.locator("input[type=radio]").nth(1);
-    
+        this.checkYesSubscribe = page.locator("input[type=radio]").nth(1);
+        
+
     }
 
     async isOnRegistartionPage(): Promise<string | null> {
@@ -166,8 +168,10 @@ export class RegistrationPage {
     }
 
     async subscribeToYes():Promise<void>{
-        const isChecked =  this.subscribeYes;
-        isChecked.check()
-        await expect(isChecked).toBeChecked()
+        const isChecked =  this.checkYesSubscribe;
+        isChecked.check();
+        const yesRadio = isChecked.innerText();
+        expect(yesRadio).toContain('Yes')
+        await expect(isChecked).toBeChecked();
     }
 }
