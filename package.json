@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test:all": "playwright test --grep @end-to-end"
+    "test:end-to-end": "playwright test --grep @end-to-end"
   },
   "keywords": [],
   "author": "",

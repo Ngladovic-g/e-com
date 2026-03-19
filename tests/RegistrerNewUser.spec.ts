@@ -24,7 +24,7 @@ test.afterEach(async ({ page }) => {
     await page.close();
 })
 
-test("Visit url and Register user", async ({ page }) => {
+test("Visit url and Register user @end-to-end", async ({ page }) => {
 
     await homePage.isOnHomePage();
     await homePage.clickMyAccount();
