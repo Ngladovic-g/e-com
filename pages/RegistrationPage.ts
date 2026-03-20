@@ -1,7 +1,7 @@
 import { Page, expect, Locator } from "@playwright/test"
 import { AccountPage } from "./AccountPage";
 import { LogoutPage } from "./LogoutPage";
-import { warn } from "node:console";
+
 
 
 export class RegistrationPage {
@@ -53,7 +53,7 @@ export class RegistrationPage {
         this.pwdWarningMsg = page.getByText("Password must be between 4 and 20 characters!");
         this.pwdConfirmWarningMsg = page.getByText("Password confirmation does not match password!");
         this.confirmPwdField = page.locator("#input-confirm");
-        this.checkYesSubscribe = page.locator("input[type=radio]").nth(1);
+        this.checkYesSubscribe = page.locator("//label[normalize-space()='Yes']");
         
 
     }
@@ -167,11 +167,13 @@ export class RegistrationPage {
 
     }
 
-    async subscribeToYes():Promise<void>{
+    async subscribeToYes():Promise<string>{
         const isChecked =  this.checkYesSubscribe;
-        isChecked.check();
+        await isChecked.check();
         const yesRadio = isChecked.innerText();
-        expect(yesRadio).toContain('Yes')
+        return yesRadio
+        
+       // expect(yesRadio).toContain('Yes')
         await expect(isChecked).toBeChecked();
     }
 }

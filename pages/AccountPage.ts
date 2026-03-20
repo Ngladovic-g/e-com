@@ -1,5 +1,6 @@
 import {Page, expect, Locator} from "@playwright/test"
 import { LogoutPage } from "./LogoutPage";
+import { NewsletterPage } from "../tests/Newsletter.spec";
 
 export class AccountPage{
     private readonly page: Page;
@@ -7,6 +8,7 @@ export class AccountPage{
     //Locators
     private readonly myAccountPage: Locator; 
     private readonly logoutBtn: Locator;
+    private readonly newsletterLink: Locator;
 
 
 
@@ -15,6 +17,8 @@ export class AccountPage{
         this.page  = page;
         this.myAccountPage = page.locator("div>h2:has-text('My Account')");
         this.logoutBtn = page.locator("a:has-text('Logout')").nth(1);
+        this.newsletterLink = page.locator("div>a:has-text('Newsletter')");
+
 
 
     }
@@ -38,6 +42,12 @@ export class AccountPage{
             console.log(`Logout page not present ${error}`);
             throw(error);
         }
+
+    }
+    async clickNewletterLink():Promise<NewsletterPage>{
+
+        await this.newsletterLink.click();
+        return new NewsletterPage(this.page);
 
     }
 }

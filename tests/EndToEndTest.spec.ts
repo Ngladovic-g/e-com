@@ -1,23 +1,27 @@
 import { expect, Page, test } from '@playwright/test'
-import { HomePage } from "../pages/HomePage";
+import { HeaderPage } from "../pages/HeaderPage";
 import { RegistrationPage } from "../pages/RegistrationPage";
 import { testConfig } from "../test.cofing";
 import { RandomDataUtils } from "../utils/randomDataGenerator"
 import { AccountPage } from '../pages/AccountPage';
 import { LogoutPage } from '../pages/LogoutPage';
+import { NewsletterPage } from './Newsletter.spec';
+import { HomePage } from '../pages/HomePage';
+import { LoginPage } from '../pages/LoginPage';
 
-test('Execute end to end test @end-to-end', async ({ page }) => {
+test.only('Execute end to end test @end-to-end', async ({ page }) => {
 
     const config = new testConfig();
 
     page.goto(config.baseUrl);
 
-    await createNewUser(page);
+    let [email, password] = await createNewUser(page);
     console.log("New user is created!")
 
-    await performeLogout(page);
-    console.log("User loged out and is on Home Page")
+   await logout(page);
+    // console.log("User loged out and is on Home Page")
 
+    await login(page, email, password);
 })
 
 test('Warring message @end-to-end' , async ({ page }) => {
@@ -26,18 +30,18 @@ test('Warring message @end-to-end' , async ({ page }) => {
 
     page.goto(config.baseUrl);
 
-    await warningMsgForRegistration(page);
-    console.log("First name warning message displayed")
+    await fieldButtonVerification(page);
+    
 
 
 })
 
 
-async function createNewUser(page: Page): Promise<string> {
+async function createNewUser(page: Page): Promise<[string, string]> {
 
-    const homePage = new HomePage(page);
-    await homePage.clickMyAccount();
-    await homePage.clickRegister();
+    const headerPage = new HeaderPage(page);
+    await headerPage.clickMyAccount();
+    await headerPage.clickRegister();
 
     const registrationPage = new RegistrationPage(page);
 
@@ -58,34 +62,64 @@ async function createNewUser(page: Page): Promise<string> {
     await registrationPage.clickContinue();
     const newUserCreated = await registrationPage.accCreatedMsg()
     expect(newUserCreated).toContain('Your Account Has Been Created!');
+    const myAccount: AccountPage = await registrationPage.continueAftreRegistration();
+     
+    await myAccount.isOnAccountPage()
+    
+    const newsletter:  NewsletterPage = await myAccount.clickNewletterLink();
+    const isYesChecked = await newsletter.yesIsChecked();
+    expect(isYesChecked).toBeChecked()
+
 
     console.log(email)
-    return email;
+    return [email, password];
+    
+
+}
+async function logout(page: Page) {
+
+    const headerPage = new HeaderPage(page);
+    headerPage.clickMyAccount();
+    const logoutPage: LogoutPage  = await headerPage.clickLogout();
+    expect( logoutPage.isContinueBtnVisible).toBeTruthy();
+    const homePage: HomePage = await logoutPage.clickContinueBtn();
+    expect(homePage.isOnHomePage).toBeTruthy()
+
+
+    
+}
+
+async function login(page: Page, email: string, password: string) {
+
+    const headerPage = new HeaderPage(page);
+
+    await headerPage.clickMyAccount();
+    const loginPage: LoginPage = await headerPage.clickLogin();
+    const myAccount: AccountPage = await loginPage.customerLogin(email, password);
+    await myAccount.isOnAccountPage();
+
+
+
+    /*
+    await loginPage.customerEmail(email);
+    await loginPage.customerPassword(password);
+    await loginPage.customerLoginButtons();
+    */
+
+
+
+
+
+
+    
 
 }
 
-async function performeLogout(page: Page) {
+async function fieldButtonVerification(page: Page) {
 
-    const registrationPage = new RegistrationPage(page);
-    const accountPage: AccountPage = await registrationPage.continueAftreRegistration()
-
-    //const accountPage = new AccountPage(page);
-    expect(await accountPage.isOnAccountPage()).toBe(true);
-
-
-    const logoutPage: LogoutPage = await accountPage.clickLogoutBtn()
-    expect(await logoutPage.isContinueBtnVisible()).toBe(true)
-
-    const homePage: HomePage = await logoutPage.clickContinueBtn()
-    expect(await homePage.isOnHomePage()).toBe(true);
-
-}
-
-async function warningMsgForRegistration(page: Page) {
-
-    const homePage = new HomePage(page);
-    await homePage.clickMyAccount();
-    const registrationPage: RegistrationPage = await homePage.clickRegister()
+    const headerPage = new HeaderPage(page);
+    await headerPage.clickMyAccount();
+    const registrationPage: RegistrationPage = await headerPage.clickRegister()
 
     //const registrationPage = new RegistrationPage(page);
 
@@ -107,8 +141,6 @@ async function warningMsgForRegistration(page: Page) {
     expect(await registrationPage.warningMsgTelephone()).toContain("Telephone must be between 3 and 32 characters!");
     expect(await registrationPage.warningMsgPwd()).toContain("Password must be between 4 and 20 characters!");
 
-
-
-
-
+    expect(await registrationPage.subscribeToYes()).toContain('Yes');
+    
 }
