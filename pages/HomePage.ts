@@ -1,24 +1,10 @@
-import { Page, expect, Locator } from '@playwright/test'
-import { RegistrationPage } from './RegistrationPage';
+import { Locator, Page } from "@playwright/test";
 
-export class HomePage {
+export class HomePage{
+    private readonly page:Page;
 
-    private readonly page: Page;
-
-    //Locators
-
-    private readonly myAccountLink: Locator;
-    private readonly registerLink: Locator;
-
-
-
-
-    constructor(page: Page) {
+    constructor(page:Page){
         this.page = page;
-        this.myAccountLink = page.locator("span:has-text('My Account')");
-        this.registerLink = page.locator("a:has-text('Register')");
-
-
     }
 
     async isOnHomePage():Promise<boolean> {
@@ -28,27 +14,5 @@ export class HomePage {
         }
         return false;
     }
-
-    async clickMyAccount():Promise<void> {
-        try {
-            await this.myAccountLink.click()
-        }
-        catch (error) {
-            console.log(`Exception occured while clicking My Account: ${error}`);
-            throw error;
-        }
-    }
-    async clickRegister():Promise<RegistrationPage>{
-        try {
-            await this.registerLink.click();
-            return new RegistrationPage(this.page);
-        }
-        catch (error) {
-            console.log(`Expception while clicking on Registration link: ${error}`)
-            throw error;
-        }
-    }
-
-
-
 }
+

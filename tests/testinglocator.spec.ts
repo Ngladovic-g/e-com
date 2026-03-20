@@ -3,13 +3,14 @@ import { test, expect, Page} from "@playwright/test"
 
 test('Locator test text', async({page})=>{
 
-page.goto("https://tutorialsninja.com/demo/");
-page.locator("span:has-text('My Account')").click();
-page.locator("a:has-text('Register')").click();
+await page.goto("https://tutorialsninja.com/demo/");
+await page.locator("span:has-text('My Account')").click();
+await page.locator("li>a:has-text('Login')").click();
+//page.locator("a:has-text('Register')").click();
 
 
 //await message(page);
-await Yes(page)
+ await Yes(page)
 
 
 })
@@ -27,11 +28,8 @@ const message = async function warningMsgFirstName(page:Page){
 
    async function Yes(page: Page) {
 
-   //const isChecked =  page.locator("input[type=radio]").nth(1);
-    //    isChecked.check();
-        const yesRadio = await page.locator("input[type=radio]").nth(2).innerText();
-        console.log(yesRadio);
-      expect(yesRadio).toContain('Yes');
-   //     await expect(isChecked).toBeChecked();
+   const text = await page.locator("div>ul>li>a:has-text('Login')").innerText();
+   console.log(text);
+
     }
    
