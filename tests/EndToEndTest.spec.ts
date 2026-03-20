@@ -9,7 +9,7 @@ import { NewsletterPage } from './Newsletter.spec';
 import { HomePage } from '../pages/HomePage';
 import { LoginPage } from '../pages/LoginPage';
 
-test.only('Execute end to end test @end-to-end', async ({ page }) => {
+test('Execute end to end test @end-to-end', async ({ page }) => {
 
     const config = new testConfig();
 
