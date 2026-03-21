@@ -27,7 +27,8 @@ export class RegistrationPage {
     private readonly confirmPwdField: Locator;
     private readonly pwdConfirmWarningMsg: Locator;
     private readonly checkYesSubscribe: Locator;
-    
+    private readonly checkNoSubscribe: Locator;
+
 
 
 
@@ -54,7 +55,8 @@ export class RegistrationPage {
         this.pwdConfirmWarningMsg = page.getByText("Password confirmation does not match password!");
         this.confirmPwdField = page.locator("#input-confirm");
         this.checkYesSubscribe = page.locator("//label[normalize-space()='Yes']");
-        
+        this.checkNoSubscribe = page.locator("//label[normalize-space()='No']");
+
 
     }
 
@@ -167,7 +169,7 @@ export class RegistrationPage {
 
     }
 
-    async subscribeToYes():Promise<string>{
+   /* async subscribeToYes():Promise<string>{
         const isChecked =  this.checkYesSubscribe;
         await isChecked.check();
         const yesRadio = isChecked.innerText();
@@ -176,4 +178,22 @@ export class RegistrationPage {
        // expect(yesRadio).toContain('Yes')
         await expect(isChecked).toBeChecked();
     }
+        */
+       async newsletterSubscribe(value:string):Promise<string>{
+        if(value === "Yes"){
+            const isChecked =   this.checkYesSubscribe;
+            await isChecked.check()
+            const notChecked = this.checkNoSubscribe.isChecked();
+            expect(await notChecked).toBe(false)
+            const yesRadio = isChecked.innerText();
+            return yesRadio
+        }
+        else{
+            const noChecked = this.checkNoSubscribe;
+            const noRadio = await noChecked.innerText();
+            const notChecked = await noChecked.isChecked();
+            expect(notChecked).toBe(true);
+            return noRadio;
+        }
+       }
 }
