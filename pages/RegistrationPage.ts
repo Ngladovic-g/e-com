@@ -190,10 +190,10 @@ export class RegistrationPage {
         }
         else{
             const noChecked = this.checkNoSubscribe;
-            const noString = await noChecked.innerText();
+            const noRadio = await noChecked.innerText();
             const notChecked = await noChecked.isChecked();
             expect(notChecked).toBe(true);
-            return noString;
+            return noRadio;
         }
        }
 }
