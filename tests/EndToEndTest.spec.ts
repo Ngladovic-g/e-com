@@ -5,11 +5,13 @@ import { testConfig } from "../test.cofing";
 import { RandomDataUtils } from "../utils/randomDataGenerator"
 import { AccountPage } from '../pages/AccountPage';
 import { LogoutPage } from '../pages/LogoutPage';
-import { NewsletterPage } from './Newsletter.spec';
+import { NewsletterPage } from '../pages/NewsletterPage';
 import { HomePage } from '../pages/HomePage';
 import { LoginPage } from '../pages/LoginPage';
 
-test('Execute end to end test @end-to-end', async ({ page }) => {
+ let checked = "No"
+
+test.only('Execute end to end test @end-to-end', async ({ page }) => {
 
     const config = new testConfig();
 
@@ -17,6 +19,7 @@ test('Execute end to end test @end-to-end', async ({ page }) => {
 
     let [email, password] = await createNewUser(page);
     console.log("New user is created!")
+
 
    await logout(page);
     // console.log("User loged out and is on Home Page")
@@ -49,6 +52,7 @@ async function createNewUser(page: Page): Promise<[string, string]> {
 
     let email: string = RandomDataUtils.getEmail();
     let password: string = "test123";
+    
 
     await registrationPage.setFirstName(RandomDataUtils.getFirstName());
     await registrationPage.setLastName(RandomDataUtils.getLastName());
@@ -56,7 +60,8 @@ async function createNewUser(page: Page): Promise<[string, string]> {
     await registrationPage.setPhoneNumber(RandomDataUtils.getPhoneNumber());
     await registrationPage.setPassword(password);
     await registrationPage.cnfPassword(password);
-    await registrationPage.subscribeToYes();
+    await registrationPage.newsletterSubscribe(checked);
+    await page.waitForTimeout(5000);
     
     await registrationPage.confirmPrivacy();
     await registrationPage.clickContinue();
@@ -67,8 +72,9 @@ async function createNewUser(page: Page): Promise<[string, string]> {
     await myAccount.isOnAccountPage()
     
     const newsletter:  NewsletterPage = await myAccount.clickNewletterLink();
-    const isYesChecked = await newsletter.yesIsChecked();
-    expect(isYesChecked).toBeChecked()
+    await page.waitForTimeout(5000);
+    const whatIsChecked = await newsletter.checkedValue(checked);
+    expect(whatIsChecked).toBeChecked()
 
 
     console.log(email)
@@ -95,16 +101,18 @@ async function login(page: Page, email: string, password: string) {
 
     await headerPage.clickMyAccount();
     const loginPage: LoginPage = await headerPage.clickLogin();
-    const myAccount: AccountPage = await loginPage.customerLogin(email, password);
-    await myAccount.isOnAccountPage();
+  const myAccount: AccountPage = await loginPage.customerLogin(email, password);
+  await myAccount.isOnAccountPage();
 
-
-
-    /*
+/*
     await loginPage.customerEmail(email);
     await loginPage.customerPassword(password);
     await loginPage.customerLoginButtons();
-    */
+    const accountPage = new AccountPage(page);
+    await accountPage.isOnAccountPage();
+  */  
+
+
 
 
 
@@ -141,6 +149,6 @@ async function fieldButtonVerification(page: Page) {
     expect(await registrationPage.warningMsgTelephone()).toContain("Telephone must be between 3 and 32 characters!");
     expect(await registrationPage.warningMsgPwd()).toContain("Password must be between 4 and 20 characters!");
 
-    expect(await registrationPage.subscribeToYes()).toContain('Yes');
+    expect(await registrationPage.newsletterSubscribe(checked)).toContain('Yes');
     
 }

@@ -1,6 +1,6 @@
 import {Page, expect, Locator} from "@playwright/test"
 import { LogoutPage } from "./LogoutPage";
-import { NewsletterPage } from "../tests/Newsletter.spec";
+import { NewsletterPage } from "../pages/NewsletterPage";
 
 export class AccountPage{
     private readonly page: Page;

@@ -24,6 +24,7 @@ export class NewsletterPage{
      return newsletter;
     }
 
+    /*
     async yesIsChecked():Promise<Locator>{
         const isYesChecked =  this.subscriptionYes;
         return isYesChecked;
@@ -33,6 +34,18 @@ export class NewsletterPage{
     async noIsChecked():Promise<Locator>{
         const isNoChecked = this.subscriptionNo;
         return isNoChecked;
+    }
+    */
+
+    async checkedValue(value: string):Promise<Locator>{
+        if(value === 'Yes'){
+            const isYesChecked =  this.subscriptionYes;
+            return isYesChecked
+        }
+        else{
+            const isNoChecked = this.subscriptionNo;
+            return isNoChecked;
+        }
     }
 
 }
