@@ -28,6 +28,9 @@ export class RegistrationPage {
     private readonly pwdConfirmWarningMsg: Locator;
     private readonly checkYesSubscribe: Locator;
     private readonly checkNoSubscribe: Locator;
+    private readonly emailAddresUsed: Locator;
+    private readonly wrongEmail: Locator;
+
 
 
 
@@ -56,7 +59,8 @@ export class RegistrationPage {
         this.confirmPwdField = page.locator("#input-confirm");
         this.checkYesSubscribe = page.locator("//label[normalize-space()='Yes']");
         this.checkNoSubscribe = page.locator("//label[normalize-space()='No']");
-
+        this.emailAddresUsed = page.locator(".alert.alert-danger.alert-dismissible")
+        this.wrongEmail = page.getByText("E-Mail Address does not appear to be valid!");
 
     }
 
@@ -69,6 +73,7 @@ export class RegistrationPage {
     }
 
     async setFirstName(fname: string): Promise<void> {
+        await this.firstName.clear();
         await this.firstName.fill(fname);
     }
 
@@ -89,6 +94,7 @@ export class RegistrationPage {
     }
 
     async cnfPassword(cnfPwd:string):Promise<void>{
+        const removedText = this.confirmPassword.clear();
         await this.confirmPassword.fill(cnfPwd);
     }
 
@@ -118,15 +124,16 @@ export class RegistrationPage {
         phoneNumber: string,
         password: string,
         cnfPassword: string
-        ):Promise<void>{
-            this.setFirstName(firstName);
-            this.setLastName(lastName);
-            this.setEmail(email);
-            this.setPhoneNumber(phoneNumber);
-            this.setPassword(password);
-            this.cnfPassword(cnfPassword);
-            this.confirmPrivacy();
-            this.clickContinue();
+        ){
+            await this.setFirstName(firstName);
+            await this.setLastName(lastName);
+            await this.setEmail(email);
+            await this.setPhoneNumber(phoneNumber);
+            await this.setPassword(password);
+            await this.cnfPassword(cnfPassword);
+            await this.confirmPrivacy();
+            await this.clickContinue();
+
             }
 
     async warningMsgFirstName():Promise<string>{
@@ -145,9 +152,19 @@ export class RegistrationPage {
 
     }
 
+    async emailWarningMsgPresent():Promise<boolean>{
+        this.emailWarningMsg.isVisible;
+        return true
+    }
+
     async warningMsEmail():Promise<string>{
-        const warningEmail = await this.emailWarningMsg.innerHTML();
+        const warningEmail = await this.emailWarningMsg.innerText();
         return warningEmail;
+    }
+
+    async wrongEmailMsg():Promise<string>{
+        return await this.wrongEmail.innerText();
+        
     }
 
     async warningMsgTelephone():Promise<string>{
@@ -163,9 +180,15 @@ export class RegistrationPage {
          await this.confirmPwdField.fill('.')
 
     }
+
     async warningMsgConfirmPwd():Promise<string>{
     const warningConfirmPwd = await this.pwdConfirmWarningMsg.innerText();
     return warningConfirmPwd;
+
+    }
+
+    async emailRegistered():Promise<string>{
+        return this.emailAddresUsed.innerText()
 
     }
 
@@ -196,4 +219,6 @@ export class RegistrationPage {
             return noRadio;
         }
        }
+
+
 }
