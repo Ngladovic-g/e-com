@@ -11,27 +11,28 @@ import { LoginPage } from '../pages/LoginPage';
 import { create } from 'node:domain';
 
 let checked = "No"
-let failedEmail = ["nglad@owdk", "nglad2@oawdk.", "nodwo@gmail.com"]
 
-test.only('Execute end to end test @end-to-end', async ({ page }) => {
+
+test('Execute end to end test @end-to-end', async ({ page }) => {
 
     const config = new testConfig();
 
     await page.goto(config.baseUrl);
 
-    // TC TS_0010    
-    await useWrongEmail(page);
+    // TC TS_0010, TS_011
+    //await useWrongEmail(page);
 
+    //TS_0013
     let [email, password] = await createNewUser(page);
-   console.log("New user is created!")
+    console.log("New user is created!")
 
-   // await logout(page);
-  //  console.log("User loged out and is on Home Page")
+    await logout(page);
+    //  console.log("User loged out and is on Home Page")
 
     await login(page, email, password)
 
     //TS_009
-   // await verifyExistingUser(page, email, password);
+    // await verifyExistingUser(page, email, password);
 
 
 })
@@ -64,15 +65,25 @@ async function createNewUser(
     let email: string = RandomDataUtils.getEmail();
     let password: string = "test123";
 
-
+   // expect(await registrationPage.fNamePlaceholder()).toContain("First Name");
     await registrationPage.setFirstName(RandomDataUtils.getFirstName());
+    expect(await registrationPage.fNamePlaceholder()).toContain("First Name");
+
+    expect(await registrationPage.lNamePlaceholder()).toContain("Last Name");
     await registrationPage.setLastName(RandomDataUtils.getLastName());
+
+    expect(await registrationPage.eMailPlaceholder()).toContain("E-Mail");
     await registrationPage.setEmail(email);
+
+    expect(await registrationPage.phonePlaceholder()).toContain("Telephone");
     await registrationPage.setPhoneNumber(RandomDataUtils.getPhoneNumber());
+
+    expect(await registrationPage.pwdPlaceholder()).toContain("Password")
     await registrationPage.setPassword(password);
 
     //TC (TS_008)  Register Functionality
 
+    expect(await registrationPage.confirmPwdPlaceholder()).toContain("Password Confirm")
     await registrationPage.cnfPassword(RandomDataUtils.getPassword());
 
     await registrationPage.newsletterSubscribe(checked);
@@ -152,7 +163,7 @@ async function fieldButtonVerification(page: Page) {
 
     expect(await registrationPage.warningMsgLastName()).toContain("Last Name must be between 1 and 32 characters");
 
-    expect(await registrationPage.warningMsEmail()).toContain("E-Mail Address does not appear to be valid!");
+    expect(await registrationPage.emailWarningMsgPresent()).toContain("E-Mail Address does not appear to be valid!");
     expect(await registrationPage.warningMsgTelephone()).toContain("Telephone must be between 3 and 32 characters!");
     expect(await registrationPage.warningMsgPwd()).toContain("Password must be between 4 and 20 characters!");
 
@@ -183,27 +194,54 @@ async function verifyExistingUser(page: Page, email: string, password: string) {
 
 async function useWrongEmail(page: Page): Promise<boolean> {
 
+    let failedEmailMsg = "E-Mail Address does not appear to be valid!";
+    let failedEmail = ["nglad2@adw", "nglad@owdk", "nodwo@gmail.com"];
+
+    let failedPhonemsg = "Telephone must be between 3 and 32 characters!"
+    let failedPhone = ["sd", "234sf234sf234sf234sf234sf234sf232", "21343243"];
+
+    let foundInvalid = false;
+
     const headerPage = new HeaderPage(page);
 
     await headerPage.clickMyAccount();
     const registrationPage: RegistrationPage = await headerPage.clickRegister();
-    let foundInvalid = false;
+
+
 
     for (const emails of failedEmail) {
-
-
 
         await registrationPage.setEmail(emails);
         await registrationPage.clickContinue();
 
         const msgVisible = await registrationPage.emailWarningMsgPresent();
 
-        if (msgVisible) {
-            foundInvalid =  true
-            console.log(registrationPage.emailWarningMsgPresent)
+        if (msgVisible === failedEmailMsg) {
+
+            foundInvalid = true;
+            expect(msgVisible).toContain(failedEmailMsg);
+            console.log("Wrong email form is used")
         }
         else {
             console.log("Proper email form is used")
+            
+        }
+    }
+
+    for (const phone of failedPhone) {
+
+        await registrationPage.setPhoneNumber(phone);
+        await registrationPage.clickContinue();
+
+        const phoneMsg = await registrationPage.warningMsgTelephone();
+
+        if (phoneMsg === failedPhonemsg) {
+            foundInvalid = true;
+            expect(phoneMsg).toContain(failedPhonemsg);
+            console.log("Wrong phone form used");
+        }
+        else {
+            console.log("Correct phone form used");
         }
     }
     return false

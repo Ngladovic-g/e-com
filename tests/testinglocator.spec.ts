@@ -9,19 +9,15 @@ await page.goto("https://tutorialsninja.com/demo/");
 await page.locator("span:has-text('My Account')").click();
 //await page.locator("li>a:has-text('Login')").click();
 await page.locator("a:has-text('Register')").click();
- page.locator("#input-email").fill;
 
- 
-// let failedEmail:any= ["nglad", "nglad@owdk", "nglad2@oawdk.", "nodwo@gmail.com"]
-const arrCount =  failedEmail.length
 
-for(let i = 0; i < arrCount; i++){
-console.log(failedEmail[i])
-const emailValue = failedEmail[i]
-}
 
-//await message(page);
- //await Yes(failedEmail);
+
+const placeholder = await page.locator('#input-firstname').getAttribute('placeholder') ?? ''
+expect(placeholder).toContain('First Name')
+
+
+
 
 
 })
@@ -37,10 +33,11 @@ const message = async function warningMsgFirstName(page:Page){
        // console.log(warning);
     }
 
-   async function Yes(arr:any) {
+   async function Yes(page: Page) {
 
-       const arrCount = await arr.count();
-       console.log(arrCount)
+    const msg = await page.locator("div>input[placeholder='First Name']").innerText();
+    console.log(msg);
+       
    
     }
    
