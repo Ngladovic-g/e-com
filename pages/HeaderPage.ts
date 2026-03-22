@@ -21,7 +21,7 @@ export class HeaderPage {
     constructor(page: Page) {
         this.page = page;
         this.myAccountLink = page.locator("span:has-text('My Account')");
-        this.registerLink = page.locator("a:has-text('Register')");
+        this.registerLink = page.locator("a:has-text('Register')").nth(0);
         this.logoutLink = page.locator("li>a:has-text('Logout')");
         this.loginLink = page.locator("li>a:has-text('Login')");
 

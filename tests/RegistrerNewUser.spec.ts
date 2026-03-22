@@ -4,12 +4,14 @@ import { testConfig } from "../test.cofing";
 import { RandomDataUtils } from "../utils/randomDataGenerator";
 import { test, expect } from "@playwright/test";
 import { AccountPage } from "../pages/AccountPage";
+import { HeaderPage } from "../pages/HeaderPage";
 
 
 let homePage: HomePage;
 let registrationPage: RegistrationPage;
 let config: testConfig;
 let accountPage: AccountPage;
+let headerPage: HeaderPage;
 
 test.beforeEach(async ({ page }) => {
     config = new testConfig;
@@ -17,6 +19,7 @@ test.beforeEach(async ({ page }) => {
     homePage = new HomePage(page);
     registrationPage = new RegistrationPage(page)
     accountPage = new AccountPage(page);
+    headerPage = new HeaderPage(page);
 
 })
 test.afterEach(async ({ page }) => {
@@ -27,8 +30,8 @@ test.afterEach(async ({ page }) => {
 test("Visit url and Register user @end-to-end", async ({ page }) => {
 
     await homePage.isOnHomePage();
-    await homePage.clickMyAccount();
-    await homePage.clickRegister()
+    await headerPage.clickMyAccount();
+    await headerPage.clickRegister()
     await expect(page.locator("div>h1:has-text('Register Account')")).toContainText(("Register Account"));
 
     let pwd = RandomDataUtils.getPassword()
