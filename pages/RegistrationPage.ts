@@ -30,7 +30,7 @@ export class RegistrationPage {
     private readonly checkNoSubscribe: Locator;
     private readonly emailAddresUsed: Locator;
     private readonly wrongEmail: Locator;
-    
+
 
 
 
@@ -61,7 +61,7 @@ export class RegistrationPage {
         this.checkNoSubscribe = page.locator("//label[normalize-space()='No']");
         this.emailAddresUsed = page.locator(".alert.alert-danger.alert-dismissible")
         this.wrongEmail = page.getByText("E-Mail Address does not appear to be valid!");
-        
+
 
     }
 
@@ -71,34 +71,34 @@ export class RegistrationPage {
         return onRegistrationpage;
     }
 
-    async fNamePlaceholder():Promise<string>{
-    return await this.firstName.getAttribute('placeholder') ?? '';
-       
+    async fNamePlaceholder(): Promise<string> {
+        return await this.firstName.getAttribute('placeholder') ?? '';
+
     }
 
-    async lNamePlaceholder():Promise<string>{
+    async lNamePlaceholder(): Promise<string> {
         return await this.lastName.getAttribute('placeholder') ?? '';
-        
+
     }
 
-    async eMailPlaceholder():Promise<string>{
+    async eMailPlaceholder(): Promise<string> {
         return await this.email.getAttribute('placeholder') ?? '';
-       
+
     }
 
-    async phonePlaceholder():Promise<string>{
+    async phonePlaceholder(): Promise<string> {
         return await this.phoneNumber.getAttribute('placeholder') ?? '';
-        
+
     }
 
-    async pwdPlaceholder():Promise<string>{
+    async pwdPlaceholder(): Promise<string> {
         return await this.password.getAttribute('placeholder') ?? '';
-        
+
     }
 
-    async confirmPwdPlaceholder():Promise<string>{
+    async confirmPwdPlaceholder(): Promise<string> {
         return await this.confirmPassword.getAttribute('placeholder') ?? '';
-       
+
     }
 
     async setFirstName(fname: string): Promise<void> {
@@ -167,12 +167,9 @@ export class RegistrationPage {
 
     async warningMsgFirstName(): Promise<string> {
 
-        const fNwarning =
-            await this.firstNameWarningMsg.innerText();
+        const fNwarning = await this.firstNameWarningMsg.innerText();
         return fNwarning;
 
-
-        // console.log(warning);
     }
 
     async warningMsgLastName(): Promise<string> {
