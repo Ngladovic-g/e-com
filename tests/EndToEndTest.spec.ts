@@ -13,23 +13,26 @@ import { create } from 'node:domain';
 let checked = "No"
 
 
-test('Execute end to end test @end-to-end', async ({ page }) => {
+test.only('Execute end to end test @end-to-end', async ({ page }) => {
 
     const config = new testConfig();
 
-    await page.goto(config.baseUrl);
+    await page.goto(config.localHost);
 
     // TC TS_0010, TS_011
     //await useWrongEmail(page);
 
     //TS_0013
     let [email, password] = await createNewUser(page);
-    console.log("New user is created!")
+   // console.log("New user is created!")
 
-    await logout(page);
+    //TS_0021
+    //await fieldButtonVerification(page);
+
+   // await logout(page);
     //  console.log("User loged out and is on Home Page")
 
-    await login(page, email, password)
+   // await login(page, email, password)
 
     //TS_009
     // await verifyExistingUser(page, email, password);
@@ -55,7 +58,6 @@ async function createNewUser(
 
     const headerPage = new HeaderPage(page);
     await headerPage.clickMyAccount();
-    page.waitForTimeout(3000);
     await headerPage.clickRegister();
 
     const registrationPage = new RegistrationPage(page);
@@ -79,7 +81,7 @@ async function createNewUser(
     await registrationPage.setPhoneNumber(RandomDataUtils.getPhoneNumber());
 
     expect(await registrationPage.pwdPlaceholder()).toContain("Password")
-    await registrationPage.setPassword(password);
+    expect(await registrationPage.setPassword(password)).toContain("password")
 
     //TC (TS_008)  Register Functionality
 
@@ -92,7 +94,7 @@ async function createNewUser(
     await registrationPage.confirmPrivacy();
     await registrationPage.clickContinue();
     expect(await registrationPage.warningMsgConfirmPwd()).toContain("Password confirmation does not match password!")
-    await registrationPage.cnfPassword(password);
+    expect(await registrationPage.cnfPassword(password)).toContain("password");
     await registrationPage.clickContinue();
 
     const newUserCreated = await registrationPage.accCreatedMsg()
@@ -166,7 +168,8 @@ async function fieldButtonVerification(page: Page) {
     expect(await registrationPage.emailWarningMsgPresent()).toContain("E-Mail Address does not appear to be valid!");
     expect(await registrationPage.warningMsgTelephone()).toContain("Telephone must be between 3 and 32 characters!");
     expect(await registrationPage.warningMsgPwd()).toContain("Password must be between 4 and 20 characters!");
-
+    expect(await registrationPage.warningPrivacyMsg()).toContain("Warning: You must agree to the Privacy Policy!")
+    await registrationPage.confirmPrivacy();
     expect(await registrationPage.newsletterSubscribe(checked)).toContain(checked);
 
 }

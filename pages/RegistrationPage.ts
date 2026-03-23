@@ -30,7 +30,7 @@ export class RegistrationPage {
     private readonly checkNoSubscribe: Locator;
     private readonly emailAddresUsed: Locator;
     private readonly wrongEmail: Locator;
-
+    private readonly privacyWarningMsg: Locator;
 
 
 
@@ -61,6 +61,7 @@ export class RegistrationPage {
         this.checkNoSubscribe = page.locator("//label[normalize-space()='No']");
         this.emailAddresUsed = page.locator(".alert.alert-danger.alert-dismissible")
         this.wrongEmail = page.getByText("E-Mail Address does not appear to be valid!");
+        this.privacyWarningMsg = page.locator(".alert.alert-danger.alert-dismissible");
 
 
     }
@@ -118,19 +119,31 @@ export class RegistrationPage {
         await this.phoneNumber.fill(phnumber);
     }
 
-    async setPassword(pwd: string): Promise<void> {
-        await this.password.fill(pwd);
+    async setPassword(password: string): Promise<string> {
+        const pwd =  this.password;
+        await pwd.fill(password);
+        return await pwd.getAttribute('type') ?? '';
     }
 
-    async cnfPassword(cnfPwd: string): Promise<void> {
-        const removedText = this.confirmPassword.clear();
-        await this.confirmPassword.fill(cnfPwd);
+    async cnfPassword(cnfPwd: string): Promise<string> {
+        const removedText = this.confirmPassword;
+        await removedText.fill(cnfPwd);
+        return await removedText.getAttribute('type') ?? '';
     }
 
     async confirmPrivacy(): Promise<void> {
-        await this.privacyPolicy.check()
 
+        const isChecked = await this.privacyPolicy.isChecked();
+
+        if (!isChecked)
+
+        expect(isChecked).toBe(false);
+
+        console.log("Privacy is not checked");
+        await this.privacyPolicy.check();
+        console.log("Privacy is checked");
     }
+
 
     async clickContinue(): Promise<void> {
         await this.continueButton.click()
@@ -164,6 +177,15 @@ export class RegistrationPage {
         await this.clickContinue();
 
     }
+
+    async warningPrivacyMsg(): Promise<string> {
+
+        const wrnMsg = await this.privacyWarningMsg.innerText();
+        return wrnMsg;
+
+    }
+
+
 
     async warningMsgFirstName(): Promise<string> {
 
@@ -201,6 +223,8 @@ export class RegistrationPage {
     async warningMsgPwd(): Promise<string> {
         const warningPwd = await this.pwdWarningMsg.innerText();
         return warningPwd;
+
+
     }
 
     async showMsgToConfirmPwdField(): Promise<void> {
