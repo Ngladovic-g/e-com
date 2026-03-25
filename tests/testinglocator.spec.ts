@@ -7,14 +7,18 @@ test('Locator test text', async({page})=>{
 
 await page.goto("https://tutorialsninja.com/demo/");
 await page.locator("span:has-text('My Account')").click();
-//await page.locator("li>a:has-text('Login')").click();
-await page.locator("a:has-text('Register')").click();
+await page.locator("li>a:has-text('Login')").click();
+await page.locator("input[value='Login']").click();
+//await page.locator("a:has-text('Register')").click();
+
+const warningMsg = await page.locator(".alert.alert-danger.alert-dismissible").innerText();
+expect(warningMsg).toContain("Warning: No match for E-Mail Address and/or Password.");
+console.log(warningMsg);
 
 
 
-
-const placeholder = await page.locator('#input-firstname').getAttribute('placeholder') ?? ''
-expect(placeholder).toContain('First Name')
+//const placeholder = await page.locator('#input-firstname').getAttribute('placeholder') ?? ''
+//expect(placeholder).toContain('First Name')
 
 
 
