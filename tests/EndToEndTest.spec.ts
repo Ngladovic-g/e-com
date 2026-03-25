@@ -8,9 +8,10 @@ import { LogoutPage } from '../pages/LogoutPage';
 import { NewsletterPage } from '../pages/NewsletterPage';
 import { HomePage } from '../pages/HomePage';
 import { LoginPage } from '../pages/LoginPage';
+import { PasswordPage } from '../pages/passwordPage';
 import { create } from 'node:domain';
 
-let checked = "No"
+let noChecked = "No"
 
 
 test.only('Execute end to end test @end-to-end', async ({ page }) => {
@@ -19,23 +20,16 @@ test.only('Execute end to end test @end-to-end', async ({ page }) => {
 
     await page.goto(config.localHost);
 
-    // TC TS_0010, TS_011
-    //await useWrongEmail(page);
+  /*  await wrongEmailAndPhoneFormat(page);
+    console.log("Correct form for email and telephone checked");
 
-    //TS_0013
-    let [email, password] = await createNewUser(page);
-   // console.log("New user is created!")
+    let [email, password] = await createNewUserAndFieldSpecVerification(page);
 
-    //TS_0021
-    //await fieldButtonVerification(page);
-
-   // await logout(page);
-    //  console.log("User loged out and is on Home Page")
-
-   // await login(page, email, password)
-
-    //TS_009
-    // await verifyExistingUser(page, email, password);
+    await logout(page);
+    console.log("User loged out and is on Home Page");
+*/
+    await login(page);
+    console.log("User is logged in and on My Account page")
 
 
 })
@@ -46,75 +40,89 @@ test('Warring message @end-to-end', async ({ page }) => {
 
     page.goto(config.baseUrl);
 
-    await fieldButtonVerification(page);
+
+
 
 })
 
-async function createNewUser(
-    page: Page,
-    useremail?: string,
-    userpassword?: string
-): Promise<[string, string]> {
+async function createNewUserAndFieldSpecVerification(page: Page) {
+
+
+    let emailUsed = " Pete_Wyman63@gmail.com";
+    // let password = "test123";
+    let email: string = RandomDataUtils.getEmail();
+    let password: string = RandomDataUtils.getPassword();
+    console.log(email);
+    console.log(password);
 
     const headerPage = new HeaderPage(page);
     await headerPage.clickMyAccount();
-    await headerPage.clickRegister();
 
-    const registrationPage = new RegistrationPage(page);
+    const registrationPage: RegistrationPage = await headerPage.clickRegister();
 
-
-
-    let email: string = RandomDataUtils.getEmail();
-    let password: string = "test123";
-
-   // expect(await registrationPage.fNamePlaceholder()).toContain("First Name");
-    await registrationPage.setFirstName(RandomDataUtils.getFirstName());
-    expect(await registrationPage.fNamePlaceholder()).toContain("First Name");
-
-    expect(await registrationPage.lNamePlaceholder()).toContain("Last Name");
-    await registrationPage.setLastName(RandomDataUtils.getLastName());
-
-    expect(await registrationPage.eMailPlaceholder()).toContain("E-Mail");
-    await registrationPage.setEmail(email);
-
-    expect(await registrationPage.phonePlaceholder()).toContain("Telephone");
-    await registrationPage.setPhoneNumber(RandomDataUtils.getPhoneNumber());
-
-    expect(await registrationPage.pwdPlaceholder()).toContain("Password")
-    expect(await registrationPage.setPassword(password)).toContain("password")
-
-    //TC (TS_008)  Register Functionality
-
-    expect(await registrationPage.confirmPwdPlaceholder()).toContain("Password Confirm")
-    await registrationPage.cnfPassword(RandomDataUtils.getPassword());
-
-    await registrationPage.newsletterSubscribe(checked);
-    await page.waitForTimeout(5000);
-
-    await registrationPage.confirmPrivacy();
     await registrationPage.clickContinue();
-    expect(await registrationPage.warningMsgConfirmPwd()).toContain("Password confirmation does not match password!")
+    expect(await registrationPage.confirmPwdPlaceholder()).toContain("Password Confirm");
     expect(await registrationPage.cnfPassword(password)).toContain("password");
+
     await registrationPage.clickContinue();
+    
+    expect(await registrationPage.warningMsgConfirmPwd()).toContain("Password confirmation does not match password!")
 
-    const newUserCreated = await registrationPage.accCreatedMsg()
-    expect(newUserCreated).toContain('Your Account Has Been Created!');
-    const myAccount: AccountPage = await registrationPage.continueAftreRegistration();
+    expect(await registrationPage.warningMsgFirstName()).toContain("First Name must be between 1 and 32 characters!");
+    expect(await registrationPage.setFirstName(RandomDataUtils.getFirstName())).toContain('First Name');
 
-    if (myAccount.isOnAccountPage) {
-        await myAccount.isOnAccountPage()
+    expect(await registrationPage.warningMsgLastName()).toContain("Last Name must be between 1 and 32 characters");
+    expect(await registrationPage.setLastName(RandomDataUtils.getLastName())).toContain("Last Name");
 
-        const newsletter: NewsletterPage = await myAccount.clickNewletterLink();
+    expect(await registrationPage.warningPrivacyMsg()).toContain("Warning: You must agree to the Privacy Policy!");
+    await registrationPage.confirmPrivacy();
+
+    expect(await registrationPage.emailWarningMsgPresent()).toContain("E-Mail Address does not appear to be valid!");
+
+    await registrationPage.setEmail(emailUsed);
+    await registrationPage.clickContinue();
+    expect(await registrationPage.emailRegistered()).toContain("Warning: E-Mail Address is already registered!");
+
+
+    expect(await registrationPage.setEmail(email)).toContain("E-Mail");
+
+
+    expect(await registrationPage.warningMsgTelephone()).toContain("Telephone must be between 3 and 32 characters!");
+    expect(await registrationPage.setPhoneNumber(RandomDataUtils.getPhoneNumber())).toContain("Telephone");
+
+    let { placeholder, warningMsg } = await registrationPage.setPassword(password);
+    expect(warningMsg).toContain("Password must be between 4 and 20 characters!");
+    expect(placeholder).toContain("Password");
+    await registrationPage.setPassword(password);
+
+
+
+    // await registrationPage.cnfPassword(password);
+
+
+    expect(await registrationPage.newsletterSubscribe(noChecked)).toContain("No");
+
+
+    await registrationPage.clickContinue();
+    expect(await registrationPage.accCreatedMsg()).toContain("Your Account Has Been Created!");
+
+    const accountPage: AccountPage = await registrationPage.continueAftreRegistration();
+    expect(await accountPage.isOnAccountPage()).toBe(true);
+
+    if (await accountPage.isOnAccountPage()) {
+
+        const newsletter: NewsletterPage = await accountPage.clickNewletterLink();
         await page.waitForTimeout(5000);
-        const whatIsChecked = await newsletter.checkedValue(checked);
-        expect(whatIsChecked).toBeChecked()
+        const noIsChecked = await newsletter.checkedValue(noChecked);
+        expect(noIsChecked).toBeChecked()
     }
     else {
         expect(await registrationPage.isOnRegistartionPage()).toContain("Register Account");
     }
 
-    console.log(email)
-    return [email, password];
+    return [email, password]
+
+
 }
 
 async function logout(page: Page) {
@@ -128,74 +136,54 @@ async function logout(page: Page) {
 
 }
 
-async function login(page: Page, email: string, password: string) {
+async function login(page: Page, email?: string, password?: string) {
 
     const headerPage = new HeaderPage(page);
 
     await headerPage.clickMyAccount();
     const loginPage: LoginPage = await headerPage.clickLogin();
-    const myAccount: AccountPage = await loginPage.customerLogin(email, password);
-    await myAccount.isOnAccountPage();
+    const loginString = await loginPage.isOnLoginPage();
+    expect(loginString).toContain("Login");
 
-    /*
-        await loginPage.customerEmail(email);
-        await loginPage.customerPassword(password);
-        await loginPage.customerLoginButtons();
-        const accountPage = new AccountPage(page);
-        await accountPage.isOnAccountPage();
-      */
+    const myAccount = new AccountPage(page);
+    await myAccount.choseOptionfromSidebar("Forgotten Password");
+    const passwordPage = new PasswordPage(page);
+    await passwordPage.isOnChangePasswordPage();
+
+/*
+    // TC_LF_003 -  email and password empty
+    await loginPage.customerLoginButtons();
+    expect(await loginPage.warningMessagePresent()).toContain("Warning: No match for E-Mail Address and/or Password.");
+
+    // TC_LF_004 - only email
+    await loginPage.customerEmail(RandomDataUtils.getEmail());
+    await loginPage.customerLoginButtons();
+    expect(await loginPage.warningMessagePresent()).toContain("Warning: No match for E-Mail Address and/or Password.");
+
+    // TC_LF_005 - both email and password
+    await loginPage.customerEmail(RandomDataUtils.getPassword());
+    await loginPage.customerLoginButtons();
+    expect(await loginPage.warningMessagePresent()).toContain("Warning: No match for E-Mail Address and/or Password.");
+
+    // TC_LF_005 - only password
+     loginPage.clearEmail
+    await loginPage.customerLoginButtons();
+    expect(await loginPage.warningMessagePresent()).toContain("Warning: No match for E-Mail Address and/or Password.");
+*/
+
+    /*const myAccount: new AccountPage; = await loginPage.customerLogin(email, password);
+    expect(await myAccount.isOnAccountPage()).toBe(true);
+    await myAccount.choseOptionfromSidebar("Password");
+    const passwordPage = new PasswordPage(page);
+    await passwordPage.isOnChangePasswordPage();
+*/
+     
+
+   
 }
 
-async function fieldButtonVerification(page: Page) {
 
-    const headerPage = new HeaderPage(page);
-    await headerPage.clickMyAccount();
-    const registrationPage: RegistrationPage = await headerPage.clickRegister()
-
-    expect(await registrationPage.isOnRegistartionPage()).toContain("Register Account");
-
-    await registrationPage.showMsgToConfirmPwdField();
-    await registrationPage.clickContinue();
-
-    const warningConfirmPwd = await registrationPage.warningMsgConfirmPwd();
-    expect(warningConfirmPwd).toContain("Password confirmation does not match password!");
-
-    const fNwarning = await registrationPage.warningMsgFirstName();
-    expect(fNwarning).toContain("First Name must be between 1 and 32 characters!");
-
-    expect(await registrationPage.warningMsgLastName()).toContain("Last Name must be between 1 and 32 characters");
-
-    expect(await registrationPage.emailWarningMsgPresent()).toContain("E-Mail Address does not appear to be valid!");
-    expect(await registrationPage.warningMsgTelephone()).toContain("Telephone must be between 3 and 32 characters!");
-    expect(await registrationPage.warningMsgPwd()).toContain("Password must be between 4 and 20 characters!");
-    expect(await registrationPage.warningPrivacyMsg()).toContain("Warning: You must agree to the Privacy Policy!")
-    await registrationPage.confirmPrivacy();
-    expect(await registrationPage.newsletterSubscribe(checked)).toContain(checked);
-
-}
-
-
-async function verifyExistingUser(page: Page, email: string, password: string) {
-
-    const homePage = new HomePage(page);
-    expect(await homePage.isOnHomePage()).toBe(true);
-
-    const headerPage = new HeaderPage(page);
-    await headerPage.clickMyAccount();
-    const registrationPage: RegistrationPage = await headerPage.clickRegister();
-
-    await registrationPage.setEmail(email)
-    await registrationPage.setFirstName(RandomDataUtils.getFirstName());
-    await registrationPage.setLastName(RandomDataUtils.getLastName());
-    await registrationPage.setPhoneNumber(RandomDataUtils.getPhoneNumber());
-    await registrationPage.setPassword(password);
-    await registrationPage.cnfPassword(password);
-    await registrationPage.confirmPrivacy();
-    await registrationPage.clickContinue();
-    expect(await registrationPage.emailRegistered()).toContain('Warning: E-Mail Address is already registered!');
-}
-
-async function useWrongEmail(page: Page): Promise<boolean> {
+async function wrongEmailAndPhoneFormat(page: Page): Promise<boolean> {
 
     let failedEmailMsg = "E-Mail Address does not appear to be valid!";
     let failedEmail = ["nglad2@adw", "nglad@owdk", "nodwo@gmail.com"];
@@ -227,7 +215,7 @@ async function useWrongEmail(page: Page): Promise<boolean> {
         }
         else {
             console.log("Proper email form is used")
-            
+
         }
     }
 

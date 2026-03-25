@@ -8,6 +8,7 @@ export class LoginPage{
     private readonly passwordInputField: Locator;
     private readonly loginButton: Locator;
     private readonly loginTitle: Locator;
+    private readonly warningMessage: Locator;
 
 
     constructor(page: Page){
@@ -16,19 +17,21 @@ export class LoginPage{
         this.passwordInputField = page.locator("#input-password");
         this.loginButton = page.locator("input[value='Login']");
         this.loginTitle = page.locator("div>ul>li>a:has-text('Login')");
+        this.warningMessage = page.locator(".alert.alert-danger.alert-dismissible");
 
-
-
-
-    }
+}
 
     async isOnLoginPage():Promise<string>{
         const title = await this.loginTitle.innerText();
-        return(title)
+        return title;
     }
 
     async customerEmail(email:string):Promise<void>{
          await this.emailInputField.fill(email);
+    }
+
+    async clearEmail():Promise<void>{
+         await this.emailInputField.clear();
     }
 
     async customerPassword(password:string):Promise<void>{
@@ -37,6 +40,14 @@ export class LoginPage{
 
     async customerLoginButtons():Promise<void>{
          await this.loginButton.click();
+    }
+
+    async warningMessagePresent():Promise<string>{
+
+        if(await this.warningMessage.isVisible()){
+            return await this.warningMessage.innerText() ?? '';
+        }
+        return "";
     }
 
 

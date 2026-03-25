@@ -72,76 +72,152 @@ export class RegistrationPage {
         return onRegistrationpage;
     }
 
-    async fNamePlaceholder(): Promise<string> {
+
+    async setFirstName(fname: string): Promise<string | null> {
+        await this.firstName.clear();
+        await this.firstName.fill(fname);
+
         return await this.firstName.getAttribute('placeholder') ?? '';
 
     }
 
-    async lNamePlaceholder(): Promise<string> {
-        return await this.lastName.getAttribute('placeholder') ?? '';
+    async warningMsgFirstName(): Promise<string> {
+
+        return await this.firstNameWarningMsg.innerText() ?? ''
 
     }
 
-    async eMailPlaceholder(): Promise<string> {
-        return await this.email.getAttribute('placeholder') ?? '';
+
+    async setLastName(lname: string): Promise<string> {
+        await this.lastName.clear();
+        await this.lastName.fill(lname);
+
+        return await this.lastName.getAttribute("placeholder") ?? ''
+    }
+
+    async warningMsgLastName(): Promise<string> {
+
+        return await this.lastNameWarningMsg.innerText() ?? '';
 
     }
 
-    async phonePlaceholder(): Promise<string> {
+    async setEmail(email: string): Promise<string> {
+
+        await this.email.clear();
+        await this.email.fill(email);
+
+        return await this.email.getAttribute("placeholder") ?? "";
+    }
+
+
+    async emailWarningMsgPresent(): Promise<string> {
+        if (await this.emailWarningMsg.isVisible()) {
+            const emailMsg = await this.emailWarningMsg.innerText();
+            return emailMsg;
+        }
+        return ""
+    }
+
+    async wrongEmailMsg(): Promise<string> {
+        return await this.wrongEmail.innerText();
+
+    }
+
+    async emailRegistered(): Promise<string> {
+        return this.emailAddresUsed.innerText();
+
+    }
+
+    async setPhoneNumber(phnumber: string): Promise<string> {
+        await this.phoneNumber.clear();
+        await this.phoneNumber.fill(phnumber);
+
         return await this.phoneNumber.getAttribute('placeholder') ?? '';
-
     }
 
-    async pwdPlaceholder(): Promise<string> {
-        return await this.password.getAttribute('placeholder') ?? '';
+    async warningMsgTelephone(): Promise<string> {
+        if (await this.telephoneWarningMsg.isVisible()) {
+            const warningTelephone = await this.telephoneWarningMsg.innerText();
+            return warningTelephone;
+        }
+        return ''
+    }
+
+
+    async setPassword(value: string): Promise<{placeholder:string, warningMsg:string}> {
+        await this.password.clear();
+        await this.password.fill(value);
+
+        return{
+         placeholder:  await this.password.getAttribute('placeholder') ?? '',
+         warningMsg:  await this.pwdWarningMsg.innerText() ?? ''
+        } 
+    }
+
+   /* async warningMsgPwd(): Promise<string> {
+
+        return await this.pwdWarningMsg.innerText() ?? '';
+
+    }
+*/
+    async cnfPassword(cnfPwd: string): Promise<string> {
+        await this.confirmPassword.clear();
+        await this.confirmPassword.fill(cnfPwd);
+
+        return await this.confirmPassword.getAttribute('type') ?? '';
 
     }
 
     async confirmPwdPlaceholder(): Promise<string> {
-        return await this.confirmPassword.getAttribute('placeholder') ?? '';
+        return await this.confirmPassword.getAttribute('placeholder') ?? "";
+    }
+
+    async warningMsgConfirmPwd(): Promise<string> {
+        return await this.pwdConfirmWarningMsg.innerText() ?? "";
 
     }
 
-    async setFirstName(fname: string): Promise<void> {
-        await this.firstName.clear();
-        await this.firstName.fill(fname);
+    async showMsgToConfirmPwdField(): Promise<void> {
+        await this.confirmPwdField.fill('.');
+
     }
 
-    async setLastName(lname: string): Promise<void> {
-        await this.lastName.fill(lname);
-    }
-
-    async setEmail(email: string): Promise<void> {
-        await this.email.fill(email);
-    }
-
-    async setPhoneNumber(phnumber: string): Promise<void> {
-        await this.phoneNumber.fill(phnumber);
-    }
-
-    async setPassword(password: string): Promise<string> {
-        const pwd =  this.password;
-        await pwd.fill(password);
-        return await pwd.getAttribute('type') ?? '';
-    }
-
-    async cnfPassword(cnfPwd: string): Promise<string> {
-        const removedText = this.confirmPassword;
-        await removedText.fill(cnfPwd);
-        return await removedText.getAttribute('type') ?? '';
+    async newsletterSubscribe(value: string): Promise<string> {
+        if (value === "Yes") {
+            const isChecked = this.checkYesSubscribe;
+            await isChecked.check()
+            const notChecked = this.checkNoSubscribe.isChecked();
+            expect(await notChecked).toBe(false)
+            const yesRadio = isChecked.innerText();
+            return yesRadio
+        }
+        else {
+            const noIsChecked = this.checkNoSubscribe;
+            const noRadio = await noIsChecked.innerText();
+            const notChecked = await noIsChecked.isChecked();
+            expect(notChecked).toBe(true);
+            return noRadio;
+        }
     }
 
     async confirmPrivacy(): Promise<void> {
 
         const isChecked = await this.privacyPolicy.isChecked();
 
-        if (!isChecked)
+        if (!isChecked) {
+            console.log("Privacy is not checked");
 
-        expect(isChecked).toBe(false);
+            await this.privacyPolicy.check();
 
-        console.log("Privacy is not checked");
-        await this.privacyPolicy.check();
-        console.log("Privacy is checked");
+            await expect(this.privacyPolicy).toBeChecked()
+            console.log("Privacy is checked");
+        }
+
+    }
+
+    async warningPrivacyMsg(): Promise<string> {
+
+        return await this.privacyWarningMsg.innerText() ?? "";
     }
 
 
@@ -176,99 +252,6 @@ export class RegistrationPage {
         await this.confirmPrivacy();
         await this.clickContinue();
 
-    }
-
-    async warningPrivacyMsg(): Promise<string> {
-
-        const wrnMsg = await this.privacyWarningMsg.innerText();
-        return wrnMsg;
-
-    }
-
-
-
-    async warningMsgFirstName(): Promise<string> {
-
-        const fNwarning = await this.firstNameWarningMsg.innerText();
-        return fNwarning;
-
-    }
-
-    async warningMsgLastName(): Promise<string> {
-        const lNwarning = await this.lastNameWarningMsg.innerText();
-        return lNwarning;
-
-    }
-
-    async emailWarningMsgPresent(): Promise<string> {
-        if (await this.emailWarningMsg.isVisible()) {
-            const emailMsg = await this.emailWarningMsg.innerText();
-            return emailMsg;
-        }
-        return ""
-    }
-
-    async wrongEmailMsg(): Promise<string> {
-        return await this.wrongEmail.innerText();
-
-    }
-
-    async warningMsgTelephone(): Promise<string> {
-        if (await this.telephoneWarningMsg.isVisible()) {
-            const warningTelephone = await this.telephoneWarningMsg.innerText();
-            return warningTelephone;
-        }
-        return ''
-    }
-    async warningMsgPwd(): Promise<string> {
-        const warningPwd = await this.pwdWarningMsg.innerText();
-        return warningPwd;
-
-
-    }
-
-    async showMsgToConfirmPwdField(): Promise<void> {
-        await this.confirmPwdField.fill('.')
-
-    }
-
-    async warningMsgConfirmPwd(): Promise<string> {
-        const warningConfirmPwd = await this.pwdConfirmWarningMsg.innerText();
-        return warningConfirmPwd;
-
-    }
-
-    async emailRegistered(): Promise<string> {
-        return this.emailAddresUsed.innerText()
-
-    }
-
-    /* async subscribeToYes():Promise<string>{
-         const isChecked =  this.checkYesSubscribe;
-         await isChecked.check();
-         const yesRadio = isChecked.innerText();
-         return yesRadio
-         
-        // expect(yesRadio).toContain('Yes')
-         await expect(isChecked).toBeChecked();
-     }
-         */
-    async newsletterSubscribe(value: string): Promise<string> {
-        if (value === "Yes") {
-            const isChecked = this.checkYesSubscribe;
-            await isChecked.check()
-            const notChecked = this.checkNoSubscribe.isChecked();
-            expect(await notChecked).toBe(false)
-            const yesRadio = isChecked.innerText();
-            return yesRadio
-        }
-        else {
-            const noChecked = this.checkNoSubscribe;
-            const noRadio = await noChecked.innerText();
-            const notChecked = await noChecked.isChecked();
-            expect(notChecked).toBe(true);
-            return noRadio;
-        }
     }
 
 
