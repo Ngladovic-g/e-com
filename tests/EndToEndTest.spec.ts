@@ -10,6 +10,7 @@ import { HomePage } from '../pages/HomePage';
 import { LoginPage } from '../pages/LoginPage';
 import { PasswordPage } from '../pages/passwordPage';
 import { create } from 'node:domain';
+import { KeyboardKeysPage } from '../pages/keyboardKeysPage';
 
 let noChecked = "No"
 
@@ -20,30 +21,20 @@ test.only('Execute end to end test @end-to-end', async ({ page }) => {
 
     await page.goto(config.localHost);
 
-  /*  await wrongEmailAndPhoneFormat(page);
-    console.log("Correct form for email and telephone checked");
+ //   await wrongEmailAndPhoneFormat(page);
+ //   console.log("Correct form for email and telephone checked");
 
     let [email, password] = await createNewUserAndFieldSpecVerification(page);
 
     await logout(page);
     console.log("User loged out and is on Home Page");
-*/
-    await login(page);
-    console.log("User is logged in and on My Account page")
+
+    await login(page, email, password);
+    console.log("User is logged in and on My Account page");
 
 
 })
 
-test('Warring message @end-to-end', async ({ page }) => {
-
-    const config = new testConfig();
-
-    page.goto(config.baseUrl);
-
-
-
-
-})
 
 async function createNewUserAndFieldSpecVerification(page: Page) {
 
@@ -65,7 +56,7 @@ async function createNewUserAndFieldSpecVerification(page: Page) {
     expect(await registrationPage.cnfPassword(password)).toContain("password");
 
     await registrationPage.clickContinue();
-    
+
     expect(await registrationPage.warningMsgConfirmPwd()).toContain("Password confirmation does not match password!")
 
     expect(await registrationPage.warningMsgFirstName()).toContain("First Name must be between 1 and 32 characters!");
@@ -138,38 +129,89 @@ async function logout(page: Page) {
 
 async function login(page: Page, email?: string, password?: string) {
 
+
     const headerPage = new HeaderPage(page);
+    const passwordPage = new PasswordPage(page);
+    const myAccount = new AccountPage(page);
 
     await headerPage.clickMyAccount();
     const loginPage: LoginPage = await headerPage.clickLogin();
+    const keyboard = new KeyboardKeysPage(page);
+
     const loginString = await loginPage.isOnLoginPage();
     expect(loginString).toContain("Login");
 
-    const myAccount = new AccountPage(page);
+
+    await loginPage.customerLoginButton();
+
+    // Exceeded allowed number of login attempts
+    expect(await loginPage.exceededAttempts()).toContain("Warning: Your account has exceeded allowed number of login attempts. Please try again in 1 hour.");
+    
+    
+   
+    //"Warning: The E-Mail Address was not found in our records, please try again!" get before
+   // expect(await loginPage.warningMessagePresent()).toContain("Warning: No match for E-Mail Address and/or Password.");
+
+    
     await myAccount.choseOptionfromSidebar("Forgotten Password");
-    const passwordPage = new PasswordPage(page);
-    await passwordPage.isOnChangePasswordPage();
+    expect(await passwordPage.isOnForgitYourPasswordPage()).toBe(true);
 
-/*
-    // TC_LF_003 -  email and password empty
-    await loginPage.customerLoginButtons();
-    expect(await loginPage.warningMessagePresent()).toContain("Warning: No match for E-Mail Address and/or Password.");
+    //Wrong email used and message displayed after pressing continue button
+    await passwordPage.emailInputForForgotenEmail("wadkoaw");
+    await passwordPage.forgotenPasswordContniuBtn();
+    expect(await passwordPage.emailNotFound()).toContain("Warning: The E-Mail Address was not found in our records, please try again!");
+    
+    //Correct email used, going back to login page and success email message
+    await passwordPage.emailInputForForgotenEmail(email ?? "abc@gmail.com");
+    console.log(await passwordPage.emailInputForForgotenEmail(email ?? "elseEmail@gmail.com"));
+    await passwordPage.forgotenPasswordContniuBtn();
+    expect(await loginPage.isOnLoginPage());
+    expect(await loginPage.confirmationMsg()).toContain("An email with a confirmation link has been sent your email address.");
 
-    // TC_LF_004 - only email
-    await loginPage.customerEmail(RandomDataUtils.getEmail());
-    await loginPage.customerLoginButtons();
-    expect(await loginPage.warningMessagePresent()).toContain("Warning: No match for E-Mail Address and/or Password.");
 
-    // TC_LF_005 - both email and password
-    await loginPage.customerEmail(RandomDataUtils.getPassword());
-    await loginPage.customerLoginButtons();
-    expect(await loginPage.warningMessagePresent()).toContain("Warning: No match for E-Mail Address and/or Password.");
+    await keyboard.pressTabKey(email ?? '');
+    await loginPage.customerPassword(password ?? '');
+    await loginPage.customerLoginButton();
+    expect(await myAccount.isOnAccountPage()).toBe(true);
+    await page.goBack();
+    expect(await myAccount.isOnAccountPage()).toBe(true);
 
-    // TC_LF_005 - only password
-     loginPage.clearEmail
-    await loginPage.customerLoginButtons();
-    expect(await loginPage.warningMessagePresent()).toContain("Warning: No match for E-Mail Address and/or Password.");
-*/
+    await headerPage.clickMyAccount();
+    const logoutPage = await headerPage.clickLogout();
+    expect(await logoutPage.isOnLogoutPage()).toBe(true);
+    await page.goBack();
+    expect(await loginPage.isOnLoginPage()).toContain("Login");
+
+    //Insert used all login attempts
+
+    /*
+        await loginPage.customerPassword(password ?? "");
+        const passwordValue = await keyboard.copyCtrlC();
+    
+        await loginPage.customerEmail(passwordValue)
+    */
+
+
+    /*
+        // TC_LF_003 -  email and password empty
+        await loginPage.customerLoginButtons();
+        expect(await loginPage.warningMessagePresent()).toContain("Warning: No match for E-Mail Address and/or Password.");
+    
+        // TC_LF_004 - only email
+        await loginPage.customerEmail(RandomDataUtils.getEmail());
+        await loginPage.customerLoginButtons();
+        expect(await loginPage.warningMessagePresent()).toContain("Warning: No match for E-Mail Address and/or Password.");
+    
+        // TC_LF_005 - both email and password
+        await loginPage.customerEmail(RandomDataUtils.getPassword());
+        await loginPage.customerLoginButtons();
+        expect(await loginPage.warningMessagePresent()).toContain("Warning: No match for E-Mail Address and/or Password.");
+    
+        // TC_LF_005 - only password
+         loginPage.clearEmail
+        await loginPage.customerLoginButtons();
+        expect(await loginPage.warningMessagePresent()).toContain("Warning: No match for E-Mail Address and/or Password.");
+    */
 
     /*const myAccount: new AccountPage; = await loginPage.customerLogin(email, password);
     expect(await myAccount.isOnAccountPage()).toBe(true);
@@ -177,9 +219,9 @@ async function login(page: Page, email?: string, password?: string) {
     const passwordPage = new PasswordPage(page);
     await passwordPage.isOnChangePasswordPage();
 */
-     
 
-   
+
+
 }
 
 
