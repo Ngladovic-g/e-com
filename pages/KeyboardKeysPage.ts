@@ -1,6 +1,6 @@
 import { el } from "@faker-js/faker";
 import { Page, expect, Locator } from "@playwright/test";
-import { LoginPage } from "./LoginPage";
+
 
 
 export class KeyboardKeysPage {
@@ -18,7 +18,7 @@ export class KeyboardKeysPage {
 
     async pressTabKey(email:string): Promise<void> {
 
-        const loginPage = new LoginPage(this.page);
+       
         const emailField = this.emailPlaceholder;
 
         for (let i = 0; i < 50; i++) {
