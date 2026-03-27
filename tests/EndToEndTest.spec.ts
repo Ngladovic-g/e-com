@@ -15,7 +15,7 @@ import { KeyboardKeysPage } from '../pages/keyboardKeysPage';
 let noChecked = "No"
 
 
-test.only('Execute end to end test @end-to-end', async ({ page }) => {
+test('Execute end to end test @end-to-end', async ({ page }) => {
 
     const config = new testConfig();
 
@@ -163,7 +163,7 @@ async function login(page: Page, email?: string, password?: string) {
     
     //Correct email used, going back to login page and success email message
     await passwordPage.emailInputForForgotenEmail(email ?? "abc@gmail.com");
-    console.log(await passwordPage.emailInputForForgotenEmail(email ?? "elseEmail@gmail.com"));
+   
     await passwordPage.forgotenPasswordContniuBtn();
     expect(await loginPage.isOnLoginPage());
     expect(await loginPage.confirmationMsg()).toContain("An email with a confirmation link has been sent your email address.");
