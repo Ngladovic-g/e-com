@@ -23,7 +23,7 @@ export class HeaderPage {
         this.myAccountLink = page.locator("span:has-text('My Account')");
         this.registerLink = page.locator("a:has-text('Register')").nth(0);
         this.logoutLink = page.locator("li>a:has-text('Logout')");
-        this.loginLink = page.locator("li>a:has-text('Login')");
+        this.loginLink = page.locator(".dropdown-menu>li>a:has-text('Login')");
 
 
     }
@@ -50,6 +50,12 @@ export class HeaderPage {
         }
     }
     
+    async logoutButtonVisible():Promise<boolean>{
+        
+        return  this.logoutLink.isVisible();
+
+    }
+
     async clickLogout():Promise<LogoutPage>{
         await this.logoutLink.click()
         return new LogoutPage(this.page);

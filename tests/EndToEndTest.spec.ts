@@ -1,4 +1,4 @@
-import { expect, Page, test } from '@playwright/test'
+import { expect, Page, test, BrowserContext } from '@playwright/test'
 import { HeaderPage } from "../pages/HeaderPage";
 import { RegistrationPage } from "../pages/RegistrationPage";
 import { testConfig } from "../test.cofing";
@@ -8,9 +8,11 @@ import { LogoutPage } from '../pages/LogoutPage';
 import { NewsletterPage } from '../pages/NewsletterPage';
 import { HomePage } from '../pages/HomePage';
 import { LoginPage } from '../pages/LoginPage';
-import { PasswordPage } from '../pages/passwordPage';
-import { create } from 'node:domain';
+
 import { KeyboardKeysPage } from '../pages/keyboardKeysPage';
+import { PasswordPage } from '../pages/passwordPage';
+
+
 
 let noChecked = "No"
 
@@ -21,8 +23,8 @@ test('Execute end to end test @end-to-end', async ({ page }) => {
 
     await page.goto(config.localHost);
 
- //   await wrongEmailAndPhoneFormat(page);
- //   console.log("Correct form for email and telephone checked");
+    //   await wrongEmailAndPhoneFormat(page);
+    //   console.log("Correct form for email and telephone checked");
 
     let [email, password] = await createNewUserAndFieldSpecVerification(page);
 
@@ -127,12 +129,13 @@ async function logout(page: Page) {
 
 }
 
-async function login(page: Page, email?: string, password?: string) {
+async function login(page: Page, email?: string, password?: string, browserContext?: BrowserContext) {
 
-
+    const changePassword = '12345';
     const headerPage = new HeaderPage(page);
     const passwordPage = new PasswordPage(page);
     const myAccount = new AccountPage(page);
+    const config = new testConfig();
 
     await headerPage.clickMyAccount();
     const loginPage: LoginPage = await headerPage.clickLogin();
@@ -146,41 +149,111 @@ async function login(page: Page, email?: string, password?: string) {
 
     // Exceeded allowed number of login attempts
     expect(await loginPage.exceededAttempts()).toContain("Warning: Your account has exceeded allowed number of login attempts. Please try again in 1 hour.");
-    
-    
-   
-    //"Warning: The E-Mail Address was not found in our records, please try again!" get before
-   // expect(await loginPage.warningMessagePresent()).toContain("Warning: No match for E-Mail Address and/or Password.");
 
-    
+    //Passord value not present in Page source(Failing)
+    //await loginPage.customerLoginButton();
+    //expect(await loginPage.passwordValueAttribur()).not.toContain("");
+
+
+    //"Warning: The E-Mail Address was not found in our records, please try again!" get before
+    // expect(await loginPage.warningMessagePresent()).toContain("Warning: No match for E-Mail Address and/or Password.");
+
+
     await myAccount.choseOptionfromSidebar("Forgotten Password");
-    expect(await passwordPage.isOnForgitYourPasswordPage()).toBe(true);
+    expect(await passwordPage.isOnForgotYourPasswordPage()).toBe(true);
 
     //Wrong email used and message displayed after pressing continue button
     await passwordPage.emailInputForForgotenEmail("wadkoaw");
     await passwordPage.forgotenPasswordContniuBtn();
     expect(await passwordPage.emailNotFound()).toContain("Warning: The E-Mail Address was not found in our records, please try again!");
-    
+
     //Correct email used, going back to login page and success email message
     await passwordPage.emailInputForForgotenEmail(email ?? "abc@gmail.com");
-   
+
     await passwordPage.forgotenPasswordContniuBtn();
     expect(await loginPage.isOnLoginPage());
     expect(await loginPage.confirmationMsg()).toContain("An email with a confirmation link has been sent your email address.");
 
+    // select Email field using Tab keystroke
+    await loginPage.pressTabKey(email ?? '');
+    await keyboard.copyValue();
 
-    await keyboard.pressTabKey(email ?? '');
+
+    //Try copy of password
     await loginPage.customerPassword(password ?? '');
+    await keyboard.clipboardBeforeCopy();
+    await keyboard.copyValue();
+    await keyboard.clipboardAftereCopy();
+    expect(await keyboard.clipboardBeforeCopy()).toBe(await keyboard.clipboardAftereCopy());
+
+    // Use browser back button
     await loginPage.customerLoginButton();
     expect(await myAccount.isOnAccountPage()).toBe(true);
     await page.goBack();
     expect(await myAccount.isOnAccountPage()).toBe(true);
 
+    //Change password while logged in
+    await myAccount.choseOptionfromSidebar("Password");
+    await passwordPage.passwordChange(changePassword);
+    await passwordPage.passwordConfirm(changePassword)
+    await passwordPage.continueButton();
+    expect(await myAccount.isOnAccountPage()).toBe(true);
+    expect(await myAccount.passwordMsgSuccessChange()).toContain("Success: Your password has been successfully updated.")
     await headerPage.clickMyAccount();
     const logoutPage = await headerPage.clickLogout();
-    expect(await logoutPage.isOnLogoutPage()).toBe(true);
+    const homePage = await logoutPage.clickContinueBtn();
+    expect(await homePage.isOnHomePage()).toBe(true);
+    await headerPage.clickMyAccount();
+    await headerPage.clickLogin();
+    await loginPage.customerEmail(email ?? "");
+    await loginPage.customerPassword(changePassword);
+    await loginPage.customerLoginButton();
+    expect(await myAccount.isOnAccountPage()).toBe(true);
+
+
+    //Closing browser should not log user out
+    page = await homePage.reopen();
+    const header = new HeaderPage(page);
+    const logout = new LogoutPage(page);
+    const login = new LoginPage(page);
+    
+    await header.clickMyAccount();
+    expect(await header.logoutButtonVisible()).toBe(true);
+
+
+    //await headerPage.clickMyAccount(); Due to closing of page new istances of classes are created
+    await header.clickLogout();
+    expect(await logout.isOnLogoutPage()).toBe(true);
     await page.goBack();
-    expect(await loginPage.isOnLoginPage()).toContain("Login");
+    expect(await login.isOnLoginPage());
+
+    //TC_LF_ 019, Ckick continue button on new customer page, and slecting different option from sidebar
+    const register: RegistrationPage = await login.newCustomerContinueButton();
+    expect(await register.isOnRegistartionPage()).toContain("Register Account");
+    await page.goBack();
+    const account = new AccountPage(page);
+    await account.choseOptionfromSidebar("Forgotten Password");
+    const pass = new PasswordPage(page);
+    expect(await pass.isOnForgotYourPasswordPage()).toBe(true);
+
+    //TC_LF_020 Navigating to login page from different pages
+    await account.choseOptionfromSidebar("Register");
+    expect(await register.isOnRegistartionPage()).toContain("Register Account");
+    await account.choseOptionfromSidebar("Login");
+    expect(await login.isOnLoginPage()).toContain("Login");
+    await account.choseOptionfromSidebar("Login");
+    expect(await login.isOnLoginPage()).toContain("Login");
+    await header.clickMyAccount()
+    await header.clickLogin();
+    expect(await login.isOnLoginPage()).toContain("Login");
+
+    //TC_LF_021 Breadcrumbs, header, url, title
+
+    expect(await login.breadcrumbsList('Login')).toContain("Login");
+    expect(await homePage.pageUrl()).toContain('http://localhost/opencart/upload/index.php?route=account/account');
+    expect(await login.pageHasTitle()).toBe(true);
+
+
 
     //Insert used all login attempts
 

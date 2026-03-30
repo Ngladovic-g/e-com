@@ -6,42 +6,38 @@ import { Page, expect, Locator } from "@playwright/test";
 export class KeyboardKeysPage {
 
     private readonly page: Page;
-    private readonly emailPlaceholder: Locator;
-    private readonly passwordInputField: Locator;
-
+    
     constructor(page: Page) {
 
-        this.page = page;
-        this.emailPlaceholder = page.getByPlaceholder("E-Mail Address", { exact: true });
-        this.passwordInputField = page.locator("#input-password");
+        this.page = page; 
+        
     }
 
-    async pressTabKey(email:string): Promise<void> {
-
-       
-        const emailField = this.emailPlaceholder;
-
-        for (let i = 0; i < 50; i++) {
-            await this.page.keyboard.press('Tab');
-
-            try {
-                await expect(emailField).toBeFocused({ timeout: 200 });
-                await emailField.fill(email);
-                return; // success → exit function
-            } catch (e) {
-                // ignore and continue tabbing
-            }
-        }
-
-        // final assertion (will fail the test)
-        await expect(emailField).toBeFocused();
-
+ async copyValue():Promise<void>{
+        
+        await this.page.keyboard.press("Control+A");
+        const copy = await this.page.keyboard.press("Control+C");
+        return copy;
+    }
+async pasteValue():Promise<void>{
+        
+         await this.page.keyboard.press("Control+V");
+       // return paste;
     }
 
-    async copyCtrlC():Promise<void>{
-        const passwordField =  this.passwordInputField;
-        await passwordField.press("Control+A");
-        return await passwordField.press("Control+C");
-    }
+async mouseRightClick(amount:number, options: any):Promise<void>{
+
+    const rightClick = await this.page.mouse.click(amount, options);
+}
+
+async clipboardBeforeCopy():Promise<void>{
+
+    await this.page.evaluate(()=> navigator.clipboard.readText);
+    
+}
+async clipboardAftereCopy():Promise<void>{
+
+    await this.page.evaluate(()=> navigator.clipboard.readText);
+}
 
 }
