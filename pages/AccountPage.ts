@@ -1,13 +1,13 @@
-import {Page, expect, Locator} from "@playwright/test"
+import { Page, expect, Locator } from "@playwright/test"
 import { LogoutPage } from "./LogoutPage";
 import { NewsletterPage } from "../pages/NewsletterPage";
 
 
-export class AccountPage{
+export class AccountPage {
     private readonly page: Page;
-    
+
     //Locators
-    private readonly myAccountPage: Locator; 
+    private readonly myAccountPage: Locator;
     private readonly logoutBtn: Locator;
     private readonly newsletterLink: Locator;
     private readonly sideBarList: Locator;
@@ -15,9 +15,9 @@ export class AccountPage{
 
 
 
-    constructor(page:Page){
+    constructor(page: Page) {
 
-        this.page  = page;
+        this.page = page;
         this.myAccountPage = page.locator("div>h2:has-text('My Account')");
         this.logoutBtn = page.locator("a:has-text('Logout')").nth(1);
         this.newsletterLink = page.locator("div>a:has-text('Newsletter')");
@@ -28,52 +28,55 @@ export class AccountPage{
 
     }
 
-    async isOnAccountPage():Promise<boolean>{
-        try{
+    async isOnAccountPage(): Promise<boolean> {
+        try {
             const accountMessage = await this.myAccountPage.isVisible();
             return accountMessage;
         }
-        catch(error){
+        catch (error) {
             console.log(`User is not on My Account page: ${error}`);
             return false;
         }
     }
 
-    async clickLogoutBtn():Promise<LogoutPage>{
-        try{
-        await this.logoutBtn.click();
-        return new LogoutPage(this.page);
+    async clickLogoutBtn(): Promise<LogoutPage> {
+        try {
+            await this.logoutBtn.click();
+            return new LogoutPage(this.page);
         }
-        catch(error){
+        catch (error) {
             console.log(`Logout page not present ${error}`);
-            throw(error);
+            throw (error);
         }
 
     }
-    async clickNewletterLink():Promise<NewsletterPage>{
+    async clickNewletterLink(): Promise<NewsletterPage> {
 
         await this.newsletterLink.click();
         return new NewsletterPage(this.page);
 
     }
 
-    async choseOptionfromSidebar(value:string):Promise<void>{
+    async choseOptionfromSidebar(value: string): Promise<boolean> {
 
-        const count =  this.sideBarList.count();
+        const count = this.sideBarList.count();
 
-        for(let i = 0; i < await count; i++){
-        const options = this.sideBarList.nth(i);
-        const title = await options.textContent();
-        if(title === value){
-            await options.click();
-            break;
+        for (let i = 0; i < await count; i++) {
+            const options = this.sideBarList.nth(i);
+            const title = await options.textContent();
+
+            if (title === value) {
+                await options.click();
+                return true
+
+            }
         }
-
-        }
-    
+        return false;
     }
 
-    async passwordMsgSuccessChange():Promise<string>{
+
+
+    async passwordMsgSuccessChange(): Promise<string> {
 
         return this.successChangePasswordMsg.innerHTML() ?? ''
     }

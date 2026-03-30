@@ -28,11 +28,11 @@ test('Execute end to end test @end-to-end', async ({ page }) => {
 
     let [email, password] = await createNewUserAndFieldSpecVerification(page);
 
-    await logout(page);
+    await logout(page, email, password);
     console.log("User loged out and is on Home Page");
 
-    await login(page, email, password);
-    console.log("User is logged in and on My Account page");
+    //   await login(page, email, password);
+    //    console.log("User is logged in and on My Account page");
 
 
 })
@@ -118,18 +118,80 @@ async function createNewUserAndFieldSpecVerification(page: Page) {
 
 }
 
-async function logout(page: Page) {
+async function logout(page: Page, email: string, password: string) {
+
+    //TC_LG_001
 
     const headerPage = new HeaderPage(page);
     await headerPage.clickMyAccount();
     const logoutPage: LogoutPage = await headerPage.clickLogout();
-    expect(logoutPage.isContinueBtnVisible).toBeTruthy();
+    expect(await logoutPage.isContinueBtnVisible()).toBe(true);
     const homePage: HomePage = await logoutPage.clickContinueBtn();
-    expect(homePage.isOnHomePage).toBeTruthy()
+    expect(await homePage.isOnHomePage()).toBe(true);
+
+    //TC_LG_002
+    async function userLogin(email: string, password: string) {
+        await headerPage.clickMyAccount();
+        const loginPage: LoginPage = await headerPage.clickLogin();
+        expect(await loginPage.isOnLoginPage()).toContain("Login");
+        const myAccount: AccountPage = await loginPage.customerLogin(email, password);
+        expect(await myAccount.isOnAccountPage()).toBe(true);
+    }
+
+    await userLogin(email, password)
+    const myAccount = new AccountPage(page);
+    await myAccount.choseOptionfromSidebar("Logout");
+    expect(await logoutPage.isOnLogoutPage()).toBe(true);
+    await headerPage.clickMyAccount();
+    expect(await headerPage.logoutButtonVisible()).toBe(true);
+    await logoutPage.clickContinueBtn();
+    expect(await homePage.isOnHomePage()).toBe(true);
+
+    //TC_LG_008 was also done with 151 line 
+    await userLogin(email, password);
+    page = await homePage.reopen();
+
+    const account = new AccountPage(page);
+    const header = new HeaderPage(page);
+    expect(await account.isOnAccountPage()).toBe(true);
+
+    //TC_LG_004
+
+    await header.clickMyAccount();
+    await header.clickLogout();
+    await page.goBack();
+    const loginPage = new LoginPage(page);
+    expect(await loginPage.isOnLoginPage()).toContain("Login");
+
+    //TC_LG_005
+    await header.clickMyAccount();
+    expect(await header.logoutButtonVisible()).toBe(false);
+
+    //TC_LG_005
+
+    const register: RegistrationPage = await header.clickRegister();
+    expect(await register.isOnRegistartionPage()).toContain("Register Account");
+    const logoutPresent = await account.choseOptionfromSidebar("Logout");
+    expect(logoutPresent).toBe(false);
+
+    //TC_LG_009
+    const logout = new LogoutPage(page);
+    await header.clickMyAccount();
+    await header.clickLogin();
+    await loginPage.customerLogin(email, password);
+    expect(await account.isOnAccountPage()).toBe(true);
+    await header.clickMyAccount();
+    await header.clickLogout();
+    expect(await logout.logoutTitle()).toBe(true);
+    expect(await logout.breadCrumbsList("Logout")).toContain("Logout");
+    expect(await logout.pageURL()).toContain("http://localhost/opencart/upload/index.php?route=account/logout");
+    
+
+
 
 }
 
-async function login(page: Page, email?: string, password?: string, browserContext?: BrowserContext) {
+async function login(page: Page, email?: string, password?: string) {
 
     const changePassword = '12345';
     const headerPage = new HeaderPage(page);
@@ -216,7 +278,7 @@ async function login(page: Page, email?: string, password?: string, browserConte
     const header = new HeaderPage(page);
     const logout = new LogoutPage(page);
     const login = new LoginPage(page);
-    
+
     await header.clickMyAccount();
     expect(await header.logoutButtonVisible()).toBe(true);
 

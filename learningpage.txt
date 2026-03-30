@@ -66,3 +66,27 @@ async choseOptionfromSidebar(value:string):Promise<void>{
         await expect(emailField).toBeFocused();
 
     }
+
+
+    let failedEmailMsg = "E-Mail Address does not appear to be valid!";
+    let failedEmail = ["nglad2@adw", "nglad@owdk", "nodwo@gmail.com"];
+
+    let foundInvalid = false;
+
+    for (const phone of failedPhone) {
+
+        await registrationPage.setPhoneNumber(phone);
+        await registrationPage.clickContinue();
+
+        const phoneMsg = await registrationPage.warningMsgTelephone();
+
+        if (phoneMsg === failedPhonemsg) {
+            foundInvalid = true;
+            expect(phoneMsg).toContain(failedPhonemsg);
+            console.log("Wrong phone form used");
+        }
+        else {
+            console.log("Correct phone form used");
+        }
+    }
+    return false
