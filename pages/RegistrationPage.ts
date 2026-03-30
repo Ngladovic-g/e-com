@@ -66,10 +66,10 @@ export class RegistrationPage {
 
     }
 
-    async isOnRegistartionPage(): Promise<string | null> {
+    async isOnRegistartionPage(): Promise<string> {
 
-        const onRegistrationpage = await this.registrationTitle.textContent();
-        return onRegistrationpage;
+        return await this.registrationTitle.textContent() ?? '';
+        
     }
 
 

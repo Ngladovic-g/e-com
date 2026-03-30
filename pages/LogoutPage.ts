@@ -1,5 +1,6 @@
-import { Page, Locator } from "@playwright/test"
+import { Page, Locator, expect } from "@playwright/test"
 import { HomePage } from "./HomePage";
+import { truncate } from "node:fs";
 
 export class LogoutPage {
 
@@ -9,6 +10,7 @@ export class LogoutPage {
 
     private readonly logoutContinuBtn: Locator;
     private readonly accountLogoutPage: Locator;
+    private readonly logoutBreadCrumbs: Locator;
 
 
     constructor(page: Page) {
@@ -17,6 +19,22 @@ export class LogoutPage {
         //Locators
         this.logoutContinuBtn = page.locator(".btn.btn-primary");
         this.accountLogoutPage = page.locator("h1:has-text('Account Logout')")
+        this.logoutBreadCrumbs = page.locator(".breadcrumb>li");
+
+    }
+
+    async logoutTitle():Promise<boolean>{
+
+        let title:string = await this.page.title();
+        if(title){
+            return true;
+        }
+        return false;
+    }
+
+    async pageURL():Promise<string>{
+
+        return this.page.url();
     }
 
     async isOnLogoutPage(): Promise<boolean> {
@@ -39,6 +57,21 @@ export class LogoutPage {
     async clickContinueBtn():Promise<HomePage>{
         await this.logoutContinuBtn.click();
         return new HomePage(this.page);
+    }
+
+    async breadCrumbsList(crumbs:string):Promise<string>{
+
+        const count = await this.logoutBreadCrumbs.count();
+
+        for(let i=0; i < count; i++){
+
+            const list =  this.logoutBreadCrumbs.nth(i);
+            const value = await list.textContent();
+            if(value === crumbs){
+                return value;
+            }
+        }
+        return `Not present`;
     }
 
 }

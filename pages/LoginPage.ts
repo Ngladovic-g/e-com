@@ -32,6 +32,7 @@ export class LoginPage {
     }
 
     async isOnLoginPage(): Promise<string> {
+        
         const title = await this.loginTitle.innerText();
         return title;
     }
