@@ -11,6 +11,7 @@ export class AccountPage{
     private readonly logoutBtn: Locator;
     private readonly newsletterLink: Locator;
     private readonly sideBarList: Locator;
+    private readonly successChangePasswordMsg: Locator;
 
 
 
@@ -21,6 +22,7 @@ export class AccountPage{
         this.logoutBtn = page.locator("a:has-text('Logout')").nth(1);
         this.newsletterLink = page.locator("div>a:has-text('Newsletter')");
         this.sideBarList = page.locator(".list-group>a");
+        this.successChangePasswordMsg = page.getByText("Success: Your password has been successfully updated.");
 
 
 
@@ -69,5 +71,10 @@ export class AccountPage{
 
         }
     
+    }
+
+    async passwordMsgSuccessChange():Promise<string>{
+
+        return this.successChangePasswordMsg.innerHTML() ?? ''
     }
 }

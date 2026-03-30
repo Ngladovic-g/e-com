@@ -1,0 +1,68 @@
+
+
+async reopen(): Promise<Page> {
+        const url = this.page.url();
+        const context = this.page.context();
+
+        await this.page.close();
+
+        const newPage = await context.newPage();
+        await newPage.goto(url);
+
+        return newPage;
+    }
+
+
+async mouseRightClick(amount:number, options: any):Promise<void>{
+
+    const rightClick = await this.page.mouse.click(amount, options);
+}
+
+async clipboardBeforeCopy():Promise<void>{
+
+    await this.page.evaluate(()=> navigator.clipboard.readText);
+    
+}
+async clipboardAftereCopy():Promise<void>{
+
+    await this.page.evaluate(()=> navigator.clipboard.readText);
+}
+
+
+async choseOptionfromSidebar(value:string):Promise<void>{
+
+        const count =  this.sideBarList.count();
+
+        for(let i = 0; i < await count; i++){
+        const options = this.sideBarList.nth(i);
+        const title = await options.textContent();
+        if(title === value){
+            await options.click();
+            break;
+        }
+
+        }
+    
+    }
+
+    sync pressTabKey(email: string): Promise<void> {
+
+
+        const emailField = this.emailInputField;
+
+        for (let i = 0; i < 50; i++) {
+            await this.page.keyboard.press('Tab');
+
+            try {
+                await expect(emailField).toBeFocused({ timeout: 200 });
+                await emailField.fill(email);
+                return; // success → exit function
+            } catch (e) {
+                // ignore and continue tabbing
+            }
+        }
+
+        // final assertion (will fail the test)
+        await expect(emailField).toBeFocused();
+
+    }
