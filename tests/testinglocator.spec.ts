@@ -1,47 +1,68 @@
-import { test, expect, Page} from "@playwright/test"
-import { count } from "node:console";
+import { test, expect, Page } from "@playwright/test"
 
-let failedEmail:any= ["nglad", "nglad@owdk", "nglad2@oawdk.", "nodwo@gmail.com"]
+let failedEmail: any = ["nglad", "nglad@owdk", "nglad2@oawdk.", "nodwo@gmail.com"]
 
-test('Locator test text', async({page})=>{
+test('Locator test text', async ({ page }) => {
 
-await page.goto("https://tutorialsninja.com/demo/");
-await page.locator("span:has-text('My Account')").click();
-await page.locator("li>a:has-text('Login')").click();
-await page.locator("input[value='Login']").click();
-//await page.locator("a:has-text('Register')").click();
-
-const warningMsg = await page.locator(".alert.alert-danger.alert-dismissible").innerText();
-expect(warningMsg).toContain("Warning: No match for E-Mail Address and/or Password.");
-console.log(warningMsg);
-
-
-
-//const placeholder = await page.locator('#input-firstname').getAttribute('placeholder') ?? ''
-//expect(placeholder).toContain('First Name')
-
-
-
-
+   await page.goto("https://tutorialsninja.com/demo/");
+   await page.locator("input.form-control").fill("iMac");
+   await page.locator("button.btn-default").click();
+   
+   //await page.locator("span:has-text('My Account')").click();
+   //await page.locator("li>a:has-text('Login')").click();
+   //await page.locator("input[value='Login']").click();
+   //await page.locator("a:has-text('Register')").click();
+   expect(await Yes(page, "Mac")).toContain("Mac");
+   
+   await page.waitForTimeout(5000);
 
 })
 
-const message = async function warningMsgFirstName(page:Page){
+const message = async function warningMsgFirstName(page: Page) {
 
-       const warning:string =  await page.getByText('First Name must be between 1 and 32 characters!', { exact: true })
-       .innerText();
-       return warning
-       expect(warning).toContain("First Name must be between 1 and 32 characters!")
-       
-       //expect(warning).toContain("First Name must be between 1 and 32 characters!")
-       // console.log(warning);
-    }
+   const warning: string = await page.getByText('First Name must be between 1 and 32 characters!', { exact: true })
+      .innerText();
+   return warning
+   expect(warning).toContain("First Name must be between 1 and 32 characters!")
 
-   async function Yes(page: Page) {
+   //expect(warning).toContain("First Name must be between 1 and 32 characters!")
+   // console.log(warning);
+}
 
-    const msg = await page.locator("div>input[placeholder='First Name']").innerText();
-    console.log(msg);
-       
-   
-    }
-   
+async function Yes(page: Page, product: string) {
+
+   const productHeader = page.locator("h4>a");
+
+   /*const count = await productCount.count();
+   for (let i = 0; i < count; i++) {
+
+      const list = productCount.nth(i);
+      const name = await list.textContent();
+      console.log(name)
+      if (product === name) {
+         
+         return name
+      }
+    
+   }
+   return "";
+   */
+  const count = await productHeader.count();
+
+        for (let i = 0; i < count; i++) {
+
+            const list = productHeader.nth(i);
+            const name = await list.textContent();
+            
+            if (name?.includes(product)) {
+                console.log(name)
+                return name;
+
+            }
+
+        }
+        return `Product with exact name ${product} does not exist`;
+
+}
+
+
