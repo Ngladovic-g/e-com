@@ -133,14 +133,14 @@ async function logout(page: Page, email: string, password: string) {
     async function userLogin(email: string, password: string) {
         await headerPage.clickMyAccount();
         const loginPage: LoginPage = await headerPage.clickLogin();
-        expect(await loginPage.isOnLoginPage()).toContain("Login");
+        expect(await loginPage.isOnLoginPage()).toContain(`Login`);
         const myAccount: AccountPage = await loginPage.customerLogin(email, password);
         expect(await myAccount.isOnAccountPage()).toBe(true);
     }
 
     await userLogin(email, password)
     const myAccount = new AccountPage(page);
-    await myAccount.choseOptionfromSidebar("Logout");
+    await myAccount.choseOptionfromSidebar(`Logout`);
     expect(await logoutPage.isOnLogoutPage()).toBe(true);
     await headerPage.clickMyAccount();
     expect(await headerPage.logoutButtonVisible()).toBe(true);
@@ -161,7 +161,7 @@ async function logout(page: Page, email: string, password: string) {
     await header.clickLogout();
     await page.goBack();
     const loginPage = new LoginPage(page);
-    expect(await loginPage.isOnLoginPage()).toContain("Login");
+    expect(await loginPage.isOnLoginPage()).toContain(`Login`);
 
     //TC_LG_005
     await header.clickMyAccount();
@@ -170,8 +170,8 @@ async function logout(page: Page, email: string, password: string) {
     //TC_LG_005
 
     const register: RegistrationPage = await header.clickRegister();
-    expect(await register.isOnRegistartionPage()).toContain("Register Account");
-    const logoutPresent = await account.choseOptionfromSidebar("Logout");
+    expect(await register.isOnRegistartionPage()).toContain(`Register Account`);
+    const logoutPresent = await account.choseOptionfromSidebar(`Logout`);
     expect(logoutPresent).toBe(false);
 
     //TC_LG_009
@@ -183,11 +183,8 @@ async function logout(page: Page, email: string, password: string) {
     await header.clickMyAccount();
     await header.clickLogout();
     expect(await logout.logoutTitle()).toBe(true);
-    expect(await logout.breadCrumbsList("Logout")).toContain("Logout");
-    expect(await logout.pageURL()).toContain("http://localhost/opencart/upload/index.php?route=account/logout");
-    
-
-
+    expect(await logout.breadCrumbsList(`Logout`)).toContain(`Logout`);
+    expect(await logout.pageURL()).toContain(`http://localhost/opencart/upload/index.php?route=account/logout`);
 
 }
 
@@ -210,7 +207,7 @@ async function login(page: Page, email?: string, password?: string) {
     await loginPage.customerLoginButton();
 
     // Exceeded allowed number of login attempts
-    expect(await loginPage.exceededAttempts()).toContain("Warning: Your account has exceeded allowed number of login attempts. Please try again in 1 hour.");
+    expect(await loginPage.exceededAttempts()).toContain(`Warning: Your account has exceeded allowed number of login attempts. Please try again in 1 hour.`);
 
     //Passord value not present in Page source(Failing)
     //await loginPage.customerLoginButton();
@@ -221,28 +218,28 @@ async function login(page: Page, email?: string, password?: string) {
     // expect(await loginPage.warningMessagePresent()).toContain("Warning: No match for E-Mail Address and/or Password.");
 
 
-    await myAccount.choseOptionfromSidebar("Forgotten Password");
+    await myAccount.choseOptionfromSidebar(`Forgotten Password`);
     expect(await passwordPage.isOnForgotYourPasswordPage()).toBe(true);
 
     //Wrong email used and message displayed after pressing continue button
-    await passwordPage.emailInputForForgotenEmail("wadkoaw");
+    await passwordPage.emailInputForForgotenEmail(`wadkoaw`);
     await passwordPage.forgotenPasswordContniuBtn();
-    expect(await passwordPage.emailNotFound()).toContain("Warning: The E-Mail Address was not found in our records, please try again!");
+    expect(await passwordPage.emailNotFound()).toContain(`Warning: The E-Mail Address was not found in our records, please try again!`);
 
     //Correct email used, going back to login page and success email message
-    await passwordPage.emailInputForForgotenEmail(email ?? "abc@gmail.com");
+    await passwordPage.emailInputForForgotenEmail(email ?? `abc@gmail.com`);
 
     await passwordPage.forgotenPasswordContniuBtn();
     expect(await loginPage.isOnLoginPage());
-    expect(await loginPage.confirmationMsg()).toContain("An email with a confirmation link has been sent your email address.");
+    expect(await loginPage.confirmationMsg()).toContain(`An email with a confirmation link has been sent your email address.`);
 
     // select Email field using Tab keystroke
-    await loginPage.pressTabKey(email ?? '');
+    await loginPage.pressTabKey(email ?? ``);
     await keyboard.copyValue();
 
 
     //Try copy of password
-    await loginPage.customerPassword(password ?? '');
+    await loginPage.customerPassword(password ?? ``);
     await keyboard.clipboardBeforeCopy();
     await keyboard.copyValue();
     await keyboard.clipboardAftereCopy();
@@ -255,19 +252,19 @@ async function login(page: Page, email?: string, password?: string) {
     expect(await myAccount.isOnAccountPage()).toBe(true);
 
     //Change password while logged in
-    await myAccount.choseOptionfromSidebar("Password");
+    await myAccount.choseOptionfromSidebar(`Password`);
     await passwordPage.passwordChange(changePassword);
     await passwordPage.passwordConfirm(changePassword)
     await passwordPage.continueButton();
     expect(await myAccount.isOnAccountPage()).toBe(true);
-    expect(await myAccount.passwordMsgSuccessChange()).toContain("Success: Your password has been successfully updated.")
+    expect(await myAccount.passwordMsgSuccessChange()).toContain(`Success: Your password has been successfully updated.`)
     await headerPage.clickMyAccount();
     const logoutPage = await headerPage.clickLogout();
     const homePage = await logoutPage.clickContinueBtn();
     expect(await homePage.isOnHomePage()).toBe(true);
     await headerPage.clickMyAccount();
     await headerPage.clickLogin();
-    await loginPage.customerEmail(email ?? "");
+    await loginPage.customerEmail(email ?? ``);
     await loginPage.customerPassword(changePassword);
     await loginPage.customerLoginButton();
     expect(await myAccount.isOnAccountPage()).toBe(true);
@@ -291,28 +288,28 @@ async function login(page: Page, email?: string, password?: string) {
 
     //TC_LF_ 019, Ckick continue button on new customer page, and slecting different option from sidebar
     const register: RegistrationPage = await login.newCustomerContinueButton();
-    expect(await register.isOnRegistartionPage()).toContain("Register Account");
+    expect(await register.isOnRegistartionPage()).toContain(`Register Account`);
     await page.goBack();
     const account = new AccountPage(page);
-    await account.choseOptionfromSidebar("Forgotten Password");
+    await account.choseOptionfromSidebar(`Forgotten Password`);
     const pass = new PasswordPage(page);
     expect(await pass.isOnForgotYourPasswordPage()).toBe(true);
 
     //TC_LF_020 Navigating to login page from different pages
-    await account.choseOptionfromSidebar("Register");
-    expect(await register.isOnRegistartionPage()).toContain("Register Account");
-    await account.choseOptionfromSidebar("Login");
-    expect(await login.isOnLoginPage()).toContain("Login");
-    await account.choseOptionfromSidebar("Login");
-    expect(await login.isOnLoginPage()).toContain("Login");
+    await account.choseOptionfromSidebar(`Register`);
+    expect(await register.isOnRegistartionPage()).toContain(`Register Account`);
+    await account.choseOptionfromSidebar(`Login`);
+    expect(await login.isOnLoginPage()).toContain(`Login`);
+    await account.choseOptionfromSidebar(`Login`);
+    expect(await login.isOnLoginPage()).toContain(`Login`);
     await header.clickMyAccount()
     await header.clickLogin();
-    expect(await login.isOnLoginPage()).toContain("Login");
+    expect(await login.isOnLoginPage()).toContain(`Login`);
 
     //TC_LF_021 Breadcrumbs, header, url, title
 
-    expect(await login.breadcrumbsList('Login')).toContain("Login");
-    expect(await homePage.pageUrl()).toContain('http://localhost/opencart/upload/index.php?route=account/account');
+    expect(await login.breadcrumbsList(`Login`)).toContain(`Login`);
+    expect(await homePage.pageUrl()).toContain(`http://localhost/opencart/upload/index.php?route=account/account`);
     expect(await login.pageHasTitle()).toBe(true);
 
 

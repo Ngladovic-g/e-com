@@ -1,6 +1,7 @@
 import { Locator, Page, expect } from "@playwright/test";
 import { AccountPage } from "./AccountPage";
 import { RegistrationPage } from "./RegistrationPage";
+import { listen } from "node:quic";
 
 export class LoginPage {
 
@@ -141,7 +142,7 @@ export class LoginPage {
             const list = await options.textContent()
 
             if (value === list) {
-                return value;
+                return list;
             }
         }
         return `${value} is not present`;
