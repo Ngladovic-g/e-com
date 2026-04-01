@@ -1,4 +1,4 @@
-import { expect, Page, test, BrowserContext } from '@playwright/test'
+import { expect, Page, test } from '@playwright/test'
 import { HeaderPage } from "../pages/HeaderPage";
 import { RegistrationPage } from "../pages/RegistrationPage";
 import { testConfig } from "../test.cofing";
@@ -11,6 +11,8 @@ import { LoginPage } from '../pages/LoginPage';
 
 import { KeyboardKeysPage } from '../pages/keyboardKeysPage';
 import { PasswordPage } from '../pages/passwordPage';
+import { SearchPage } from '../pages/SearchPage';
+
 
 
 
@@ -22,14 +24,16 @@ test('Execute end to end test @end-to-end', async ({ page }) => {
     const config = new testConfig();
 
     await page.goto(config.localHost);
-
+    
+    await searchOption(page);
+    await page.waitForTimeout(5000)
     //   await wrongEmailAndPhoneFormat(page);
     //   console.log("Correct form for email and telephone checked");
 
-    let [email, password] = await createNewUserAndFieldSpecVerification(page);
+//    let [email, password] = await createNewUserAndFieldSpecVerification(page);
 
-    await logout(page, email, password);
-    console.log("User loged out and is on Home Page");
+//    await logout(page, email, password);
+ //   console.log("User loged out and is on Home Page");
 
     //   await login(page, email, password);
     //    console.log("User is logged in and on My Account page");
@@ -38,7 +42,7 @@ test('Execute end to end test @end-to-end', async ({ page }) => {
 })
 
 
-async function createNewUserAndFieldSpecVerification(page: Page) {
+async function createNewUserAndFieldSpecVerification(page: Page):Promise<string[]> {
 
 
     let emailUsed = " Pete_Wyman63@gmail.com";
@@ -118,7 +122,7 @@ async function createNewUserAndFieldSpecVerification(page: Page) {
 
 }
 
-async function logout(page: Page, email: string, password: string) {
+async function logout(page: Page, email: string, password: string):Promise<void> {
 
     //TC_LG_001
 
@@ -191,7 +195,7 @@ async function logout(page: Page, email: string, password: string) {
 
 }
 
-async function login(page: Page, email?: string, password?: string) {
+async function login(page: Page, email?: string, password?: string):Promise<void> {
 
     const changePassword = '12345';
     const headerPage = new HeaderPage(page);
@@ -413,6 +417,64 @@ async function wrongEmailAndPhoneFormat(page: Page): Promise<boolean> {
         }
     }
     return false
+}
+
+async function searchOption(page: Page):Promise<void>{
+
+    const header = new HeaderPage(page);
+    const config = new testConfig();
+    
+let email = config.username1;
+let password = config.password1;
+
+const SearchPage: SearchPage = await header.productSearch(`ipod`);
+expect(await SearchPage.resultProduct()).toBe(4);
+expect(await SearchPage.productTitle(`ipod`)).toHaveLength(4)
+
+
+async function productCount(name:string, count: number){
+const productCount = await SearchPage.resultProduct();
+expect(await SearchPage.resultProduct()).toBe(count);
+expect(await SearchPage.productTitle(name)).toHaveLength(productCount);
+
+}
+
+//TC_SF_001
+const search: SearchPage = await header.productSearch(`Mac`);
+await productCount(`Mac`, 4);
+
+//TC_SF_0002
+
+await header.productSearch(`Fitbit`);
+await productCount(`Fitbit`, 0);
+expect(await search.noProductAvailableMsg()).toBe(true);
+
+//TC_SF_003
+
+await header.productName()
+expect(await search.noProductAvailableMsg()).toBe(true);
+
+//TC_SF_004
+
+await header.clickMyAccount();
+const loginPage: LoginPage = await header.clickLogin();
+expect(await loginPage.isOnLoginPage()).toContain(`Login`);
+await loginPage.customerLogin(email, password);
+await header.productSearch(`iMac`);
+expect(await search.isOnSearchPage()).toBe(true);
+await productCount(`iMac`, 1)
+
+//TC_SF_005
+await header.productSearch(`ipod`);
+await productCount(`ipod`, 4);
+
+//TC_SF_006'`
+
+expect(await search.clearSearchCriteria()).toBe(``)
+expect(await search.getSearchCriteriaAttribut()).toContain(`Keywords`);
+expect(await header.clearSearchInput()).toBe(``);
+expect(await header.searchInputPlacholder()).toContain(`Search`);
+
 }
 
 
