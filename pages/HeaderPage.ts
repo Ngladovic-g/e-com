@@ -3,6 +3,7 @@ import { RegistrationPage } from './RegistrationPage';
 import { LogoutPage } from './LogoutPage';
 import { SearchPage } from './SearchPage';
 import { LoginPage } from './LoginPage';
+import { HomePage } from './HomePage';
 
 export class HeaderPage {
 
@@ -16,6 +17,7 @@ export class HeaderPage {
     private readonly loginLink: Locator;
     private readonly searchInputField: Locator;
     private readonly searchButton: Locator;
+    private readonly homePageLogo: Locator;
 
 
 
@@ -29,10 +31,15 @@ export class HeaderPage {
         this.loginLink = page.locator(".dropdown-menu>li>a:has-text('Login')");
         this.searchButton = page.locator("button.btn.btn-default.btn-lg");
         this.searchInputField = page.locator("input.form-control").nth(0);
-
-
+        this.homePageLogo = page.locator("#logo");
     }
 
+
+    async goToHomePage():Promise<HomePage>{
+
+       await this.homePageLogo.click();
+       return new HomePage(this.page);
+    }
 
     async clickMyAccount(): Promise<void> {
         try {

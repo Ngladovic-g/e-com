@@ -468,12 +468,55 @@ await productCount(`iMac`, 1)
 await header.productSearch(`ipod`);
 await productCount(`ipod`, 4);
 
-//TC_SF_006'`
+//TC_SF_006
 
 expect(await search.clearSearchCriteria()).toBe(``)
 expect(await search.getSearchCriteriaAttribut()).toContain(`Keywords`);
 expect(await header.clearSearchInput()).toBe(``);
 expect(await header.searchInputPlacholder()).toContain(`Search`);
+
+//TC_SF_007
+
+expect(await search.keywordInputField(`ipod`)).toBe(`ipod`)
+await search.buttonKeywordSearch();
+await productCount(`ipod`, 4);
+
+//TC_SF_008
+const homePage: HomePage = await header.goToHomePage();
+expect(await homePage.isOnHomePage()).toBe(true);
+await header.buttonSearch();
+expect(await search.isOnSearchPage()).toBe(true);
+expect(await search.tickCheckbox()).toBeChecked();
+expect(await search.keywordInputField(`iLife`)).toBe(`iLife`)
+await search.buttonKeywordSearch();
+await productCount(`iMac`, 1);
+
+//TC_SF_009
+await header.goToHomePage();
+expect(await homePage.isOnHomePage()).toBe(true);
+await header.buttonSearch();
+expect(await search.isOnSearchPage()).toBe(true);
+await search.keywordInputField("iMac");
+expect(await search.selectCategory(`Mac`)).toBe(`Mac`)
+await search.buttonKeywordSearch();
+await productCount(`iMac`, 1);
+expect(await search.selectCategory("PC")).toBe(`PC`);
+await search.buttonKeywordSearch();
+expect(await search.noProductAvailableMsg()).toBe(true)
+
+//TC_SF_010
+
+expect(await search.selectCategory(`Desktops`)).toBe('Desktops');
+await search.buttonKeywordSearch();
+expect(await search.noProductAvailableMsg()).toBe(true)
+expect(await search.subCheck()).toBeChecked();
+await search.buttonKeywordSearch();
+await productCount('iMac', 1);
+
+
+
+
+
 
 }
 
