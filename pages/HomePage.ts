@@ -9,9 +9,7 @@ export class HomePage {
 
     constructor(page: Page) {
         this.page = page;
-        
-
-
+    
     }
 
     async isOnHomePage(): Promise<boolean> {
@@ -22,6 +20,7 @@ export class HomePage {
         return false;
     }
 
+    
     
 
     async reopen(): Promise<Page> {
