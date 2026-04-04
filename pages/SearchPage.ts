@@ -1,4 +1,5 @@
 import { Page, expect, Locator } from "@playwright/test";
+import { ProductDisplaypage } from "./ProductDisplayPage";
 
 export class SearchPage {
 
@@ -13,7 +14,14 @@ export class SearchPage {
     private readonly openDropdown: Locator;
     private readonly subcategoryCheck: Locator;
     private readonly listView: Locator;
-    private readonly listLayover: Locator;
+    private readonly gridView: Locator;
+    private readonly productLayout: Locator;
+    private readonly addTooCart: Locator;
+    private readonly addTooWish: Locator;
+    private readonly compareProduce: Locator;
+  ;
+
+
 
 
     constructor(page: Page) {
@@ -28,8 +36,14 @@ export class SearchPage {
         this.openDropdown = page.locator("select[name='category_id']")
         this.categoryDropdown = page.locator("select[class='form-control']>option");
         this.subcategoryCheck = page.locator("input[name='sub_category']");
-        this.listView = page.locator("#list-view")
-        this.listLayover = page.locator(".product-list")
+        this.listView = page.locator("#list-view");
+        this.gridView = page.locator("#grid-view");
+        this.productLayout = page.locator(".product-layout");
+        this.addTooCart = page.locator("span:has-text('Add to Cart')")
+        this.addTooWish = page.locator("button[data-original-title='Add to Wish List']");
+        this.compareProduce = page.locator("button[data-original-title='Compare this Product']");
+       
+
     }
 
 
@@ -142,6 +156,39 @@ export class SearchPage {
 
     }
 
+    async selectView(view: string):Promise<string> {
+
+
+        if (view === "List") {
+
+            await this.listView.click();
+
+        }
+        else {
+            await this.gridView.click();
+        }
+       
+            return await this.productLayout.getAttribute("class") ?? '';
+           
+        
+    }
+
+    async buttonsEnabled(): Promise<{ addCart: boolean, wishlist: boolean, compare: boolean }> {
+
+        return {
+            addCart: await this.addTooCart.isEnabled(),
+            wishlist: await this.addTooWish.isEnabled(),
+            compare: await this.compareProduce.isEnabled()
+        }
+    }
+
+    async clickOnProducImg(product: string): Promise<ProductDisplaypage> {
+
+        await this.page.locator(`img[alt='${product}']`).click();
+        return new ProductDisplaypage(this.page)
+
+
+    }
 
 
 }

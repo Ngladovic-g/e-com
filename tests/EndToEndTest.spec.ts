@@ -12,6 +12,7 @@ import { LoginPage } from '../pages/LoginPage';
 import { KeyboardKeysPage } from '../pages/keyboardKeysPage';
 import { PasswordPage } from '../pages/passwordPage';
 import { SearchPage } from '../pages/SearchPage';
+import { ProductDisplaypage } from '../pages/ProductDisplayPage';
 
 
 
@@ -513,6 +514,21 @@ expect(await search.subCheck()).toBeChecked();
 await search.buttonKeywordSearch();
 await productCount('iMac', 1);
 
+//TC_SF_011
+
+expect(await search.selectView("List")).toContain(`product-list`);
+let {addCart, wishlist, compare} = await search.buttonsEnabled() 
+expect(addCart).toBe(true);
+expect(wishlist).toBe(true);
+expect(compare).toBe(true);
+const productPage: ProductDisplaypage = await search.clickOnProducImg(`iMac`);
+expect(await productPage.productButtons()).toEqual({add:true, wish:true, compareProduct:true});
+await page.goBack();
+expect(await search.selectView("Grid")).toContain(`product-grid`);
+expect(await search.buttonsEnabled()).toEqual({addCart:true, wishlist:true,compare:true})
+await search.clickOnProducImg(`iMac`);
+expect(await productPage.isOnProductPage()).toContain('iMac');
+expect(await productPage.productButtons()).toEqual({add:true, wish:true, compareProduct:true});
 
 
 
