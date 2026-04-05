@@ -517,22 +517,45 @@ await productCount('iMac', 1);
 //TC_SF_011
 
 expect(await search.selectView("List")).toContain(`product-list`);
-let {addCart, wishlist, compare} = await search.buttonsEnabled() 
-expect(addCart).toBe(true);
-expect(wishlist).toBe(true);
-expect(compare).toBe(true);
+expect(await search.addToCartButtonsEnabled() && await search.wishlistButtonsEnabled() && await search.compareButtonEnabled()).toBe(true) ;
+
+
 const productPage: ProductDisplaypage = await search.clickOnProducImg(`iMac`);
-expect(await productPage.productButtons()).toEqual({add:true, wish:true, compareProduct:true});
+expect(await productPage.addProductButtons() && await productPage.wishListButtons()&& await productPage.compareButtons()).toBe(true)
 await page.goBack();
 expect(await search.selectView("Grid")).toContain(`product-grid`);
-expect(await search.buttonsEnabled()).toEqual({addCart:true, wishlist:true,compare:true})
+expect(await search.addToCartButtonsEnabled() && await search.wishlistButtonsEnabled() && await search.compareButtonEnabled()).toBe(true)
 await search.clickOnProducImg(`iMac`);
 expect(await productPage.isOnProductPage()).toContain('iMac');
-expect(await productPage.productButtons()).toEqual({add:true, wish:true, compareProduct:true});
+expect(await productPage.addProductButtons() && await productPage.wishListButtons()&& await productPage.compareButtons()).toBe(true)
 
+//TC_SF_012
 
+await header.goToHomePage();
+expect(await homePage.isOnHomePage()).toBe(true);
+await header.productSearch(`Mac`);
+await productCount(`Mac`, 4);
+expect(await search.selectView("List")).toContain(`product-list`);
+expect(await search.addToCartButtonsEnabled() && await search.wishlistButtonsEnabled() && await search.compareButtonEnabled()).toBe(true)
+expect(await search.selectView(`Grid`)).toContain(`product-grid`);
+expect(await search.addToCartButtonsEnabled() && await search.wishlistButtonsEnabled() && await search.compareButtonEnabled()).toBe(true)
+expect(await search.clickOnProducImg(`MacBook`));
+expect(await productPage.isOnProductPage()).toBe(`MacBook`);
 
+//TC_SF_013
+await header.productSearch(`ipod Classic`);
+expect(await search.isOnSearchPage()).toBe(true);
+expect(await search.compareProductBtn()).toContain("Success: You have added iPod Classic to your product comparison!");
 
+// TC_SF_014
+await header.goToHomePage();
+expect(await homePage.isOnHomePage()).toBe(true);
+await header.productSearch(`ipod`);
+expect(await search.isOnSearchPage());
+expect(await search.selectSortBy(`Name (Z - A)`)).toContain(`Name (Z - A)`);
+expect(await search.selectShowNumber(`75`)).toContain(`75`);
+
+//TC_SF_016
 
 }
 

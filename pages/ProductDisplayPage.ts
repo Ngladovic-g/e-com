@@ -23,14 +23,35 @@ async isOnProductPage():Promise<string>{
  
 }
 
-async productButtons():Promise<{add:boolean, wish:boolean, compareProduct:boolean}>{
+async addProductButtons():Promise<boolean>{
 
-    return {
-            add: await this.addToCartButton.isEnabled(),
-            wish: await this.wishlistButton.isEnabled(),
-            compareProduct: await this.compareButton.isEnabled()
+    const addButtons =  await this.addToCartButton.all();
+
+    for(const addButton of addButtons){
+        if(!addButton.isEnabled()) return false;
+    }
+return true
     }
 
+
+async wishListButtons():Promise<boolean>{
+
+    const wishlistButtons =  await this.wishlistButton.all();
+
+    for(const wishList of wishlistButtons){
+        if(!wishList.isEnabled()) return false;
+    }
+return true
+}
+
+async compareButtons():Promise<boolean>{
+
+    const compareButton =  await this.compareButton.all();
+
+    for(const copareButton of compareButton){
+        if(!copareButton.isEnabled()) return false;
+    }
+return true
 }
 
 }

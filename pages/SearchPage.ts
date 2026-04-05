@@ -16,9 +16,14 @@ export class SearchPage {
     private readonly listView: Locator;
     private readonly gridView: Locator;
     private readonly productLayout: Locator;
-    private readonly addTooCart: Locator;
-    private readonly addTooWish: Locator;
-    private readonly compareProduce: Locator;
+    private readonly addToCart: Locator;
+    private readonly addToWish: Locator;
+    private readonly compareProduct: Locator;
+    private readonly addCompareMessage: Locator;
+    private readonly sortByOptions: Locator;
+    private readonly sortBy:Locator;
+    private readonly showNumber: Locator;
+    private readonly showNumberOptions: Locator;
   ;
 
 
@@ -38,12 +43,15 @@ export class SearchPage {
         this.subcategoryCheck = page.locator("input[name='sub_category']");
         this.listView = page.locator("#list-view");
         this.gridView = page.locator("#grid-view");
-        this.productLayout = page.locator(".product-layout");
-        this.addTooCart = page.locator("span:has-text('Add to Cart')")
-        this.addTooWish = page.locator("button[data-original-title='Add to Wish List']");
-        this.compareProduce = page.locator("button[data-original-title='Compare this Product']");
-       
-
+        this.productLayout = page.locator(".product-layout").nth(0);
+        this.addToCart = page.locator("span:has-text('Add to Cart')")
+        this.addToWish = page.locator("button[data-original-title='Add to Wish List']");
+        this.compareProduct = page.locator("button[data-original-title='Compare this Product']");
+        this.addCompareMessage = page.getByText("Success: You have added iPod Classic to your product comparison! ×", { exact: true })
+        this.sortByOptions = page.locator("#input-sort>option");
+        this.sortBy = page.locator("#input-sort");
+        this.showNumber = page.locator("#input-limit");
+        this.showNumberOptions = page.locator("#input-limit>option");
     }
 
 
@@ -162,27 +170,48 @@ export class SearchPage {
         if (view === "List") {
 
             await this.listView.click();
-
         }
         else {
             await this.gridView.click();
         }
-       
             return await this.productLayout.getAttribute("class") ?? '';
            
         
     }
 
-    async buttonsEnabled(): Promise<{ addCart: boolean, wishlist: boolean, compare: boolean }> {
+    async addToCartButtonsEnabled(): Promise<boolean> {
 
-        return {
-            addCart: await this.addTooCart.isEnabled(),
-            wishlist: await this.addTooWish.isEnabled(),
-            compare: await this.compareProduce.isEnabled()
+        const addCart = await this.addToCart.all();
+
+        for(const cart of addCart){
+            if(!await cart.isEnabled()) return false;
         }
+        return true
     }
 
-    async clickOnProducImg(product: string): Promise<ProductDisplaypage> {
+    async wishlistButtonsEnabled():Promise<boolean>{
+
+        const wishes = await this.addToWish.all();
+
+        for(const wish of wishes){
+            if(!wish.isEnabled()) return false;
+        }
+        return true;
+
+    }
+
+    async compareButtonEnabled():Promise<boolean>{
+
+        const comparing = await this.compareProduct.all();
+
+        for(const compare of comparing){
+            if(!compare.isEnabled()) return false;
+             
+        }
+        return true;
+    }
+
+async clickOnProducImg(product: string): Promise<ProductDisplaypage> {
 
         await this.page.locator(`img[alt='${product}']`).click();
         return new ProductDisplaypage(this.page)
@@ -190,5 +219,44 @@ export class SearchPage {
 
     }
 
+async compareProductBtn():Promise<string>{
+
+    await this.compareProduct.click();
+    return await this.addCompareMessage.innerText()
+}
+
+async selectSortBy(value: string):Promise<string>{
+
+    const sortByOption = await this.sortByOptions.all();
+
+    for(const option of sortByOption){
+
+        const name = await option.textContent();
+        if(value === name){
+            await this.sortBy.selectOption({label:name});
+            return name;
+        }
+    }
+return `No option avaliable in sort by`
+}
+
+async selectShowNumber(value: string):Promise<string>{
+
+    await this.showNumber.click();
+    const numbers = await this.showNumberOptions.all();
+    
+    
+   for(const number of numbers){
+
+        const text = await number.textContent();
+
+        if(value === text){
+            await this.showNumber.selectOption({label:text!});
+            return text!;
+        }
+    }
+    return `Number option not available`
+    
+}
 
 }
