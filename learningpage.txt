@@ -90,3 +90,25 @@ async choseOptionfromSidebar(value:string):Promise<void>{
         }
     }
     return false
+
+    
+
+    async selectCategory(category: string): Promise<string> {
+
+
+        const options = await this.categoryDropdown.all();
+
+        for (const option of options) {
+            const text = await option.textContent();
+            const cleanText = text?.replace(/\u00A0/g, '').trim();
+            
+
+            if (cleanText === category) {
+                const value = await option.getAttribute('value')
+                await this.openDropdown.selectOption({ value: value! });
+                return cleanText
+            }
+        }
+        return ``;
+
+    }

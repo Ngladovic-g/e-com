@@ -1,13 +1,15 @@
 import { Locator, Page } from "@playwright/test";
+import { SearchPage } from "./SearchPage";
 
 
 export class HomePage {
     private readonly page: Page;
-  
+    
 
-    constructor(page: Page ) {
+
+    constructor(page: Page) {
         this.page = page;
-        
+    
     }
 
     async isOnHomePage(): Promise<boolean> {
@@ -17,6 +19,9 @@ export class HomePage {
         }
         return false;
     }
+
+    
+    
 
     async reopen(): Promise<Page> {
         const url = this.page.url();
@@ -30,11 +35,11 @@ export class HomePage {
         return newPage;
     }
 
-    async pageUrl():Promise<string>{
-       
+    async pageUrl(): Promise<string> {
+
         return this.page.url();
-        
-        }
+
+    }
 
 }
 

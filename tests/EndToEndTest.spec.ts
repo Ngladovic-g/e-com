@@ -1,4 +1,4 @@
-import { expect, Page, test, BrowserContext } from '@playwright/test'
+import { expect, Page, test } from '@playwright/test'
 import { HeaderPage } from "../pages/HeaderPage";
 import { RegistrationPage } from "../pages/RegistrationPage";
 import { testConfig } from "../test.cofing";
@@ -11,6 +11,9 @@ import { LoginPage } from '../pages/LoginPage';
 
 import { KeyboardKeysPage } from '../pages/keyboardKeysPage';
 import { PasswordPage } from '../pages/passwordPage';
+import { SearchPage } from '../pages/SearchPage';
+import { ProductDisplaypage } from '../pages/ProductDisplayPage';
+
 
 
 
@@ -22,14 +25,16 @@ test('Execute end to end test @end-to-end', async ({ page }) => {
     const config = new testConfig();
 
     await page.goto(config.localHost);
-
+    
+    await searchOption(page);
+    await page.waitForTimeout(5000)
     //   await wrongEmailAndPhoneFormat(page);
     //   console.log("Correct form for email and telephone checked");
 
-    let [email, password] = await createNewUserAndFieldSpecVerification(page);
+//    let [email, password] = await createNewUserAndFieldSpecVerification(page);
 
-    await logout(page, email, password);
-    console.log("User loged out and is on Home Page");
+//    await logout(page, email, password);
+ //   console.log("User loged out and is on Home Page");
 
     //   await login(page, email, password);
     //    console.log("User is logged in and on My Account page");
@@ -38,7 +43,7 @@ test('Execute end to end test @end-to-end', async ({ page }) => {
 })
 
 
-async function createNewUserAndFieldSpecVerification(page: Page) {
+async function createNewUserAndFieldSpecVerification(page: Page):Promise<string[]> {
 
 
     let emailUsed = " Pete_Wyman63@gmail.com";
@@ -118,7 +123,7 @@ async function createNewUserAndFieldSpecVerification(page: Page) {
 
 }
 
-async function logout(page: Page, email: string, password: string) {
+async function logout(page: Page, email: string, password: string):Promise<void> {
 
     //TC_LG_001
 
@@ -188,7 +193,7 @@ async function logout(page: Page, email: string, password: string) {
 
 }
 
-async function login(page: Page, email?: string, password?: string) {
+async function login(page: Page, email?: string, password?: string):Promise<void> {
 
     const changePassword = '12345';
     const headerPage = new HeaderPage(page);
@@ -410,6 +415,145 @@ async function wrongEmailAndPhoneFormat(page: Page): Promise<boolean> {
         }
     }
     return false
+}
+
+async function searchOption(page: Page):Promise<void>{
+
+    const header = new HeaderPage(page);
+    const config = new testConfig();
+    
+let email = config.username1;
+let password = config.password1;
+
+const SearchPage: SearchPage = await header.productSearch(`ipod`);
+expect(await SearchPage.resultProduct()).toBe(4);
+expect(await SearchPage.productTitle(`ipod`)).toHaveLength(4)
+
+
+async function productCount(name:string, count: number){
+const productCount = await SearchPage.resultProduct();
+expect(await SearchPage.resultProduct()).toBe(count);
+expect(await SearchPage.productTitle(name)).toHaveLength(productCount);
+
+}
+
+//TC_SF_001
+const search: SearchPage = await header.productSearch(`Mac`);
+await productCount(`Mac`, 4);
+
+//TC_SF_0002
+
+await header.productSearch(`Fitbit`);
+await productCount(`Fitbit`, 0);
+expect(await search.noProductAvailableMsg()).toBe(true);
+
+//TC_SF_003
+
+await header.productName()
+expect(await search.noProductAvailableMsg()).toBe(true);
+
+//TC_SF_004
+
+await header.clickMyAccount();
+const loginPage: LoginPage = await header.clickLogin();
+expect(await loginPage.isOnLoginPage()).toContain(`Login`);
+await loginPage.customerLogin(email, password);
+await header.productSearch(`iMac`);
+expect(await search.isOnSearchPage()).toBe(true);
+await productCount(`iMac`, 1)
+
+//TC_SF_005
+await header.productSearch(`ipod`);
+await productCount(`ipod`, 4);
+
+//TC_SF_006
+
+expect(await search.clearSearchCriteria()).toBe(``)
+expect(await search.getSearchCriteriaAttribut()).toContain(`Keywords`);
+expect(await header.clearSearchInput()).toBe(``);
+expect(await header.searchInputPlacholder()).toContain(`Search`);
+
+//TC_SF_007
+
+expect(await search.keywordInputField(`ipod`)).toBe(`ipod`)
+await search.buttonKeywordSearch();
+await productCount(`ipod`, 4);
+
+//TC_SF_008
+const homePage: HomePage = await header.goToHomePage();
+expect(await homePage.isOnHomePage()).toBe(true);
+await header.buttonSearch();
+expect(await search.isOnSearchPage()).toBe(true);
+expect(await search.tickCheckbox()).toBeChecked();
+expect(await search.keywordInputField(`iLife`)).toBe(`iLife`)
+await search.buttonKeywordSearch();
+await productCount(`iMac`, 1);
+
+//TC_SF_009
+await header.goToHomePage();
+expect(await homePage.isOnHomePage()).toBe(true);
+await header.buttonSearch();
+expect(await search.isOnSearchPage()).toBe(true);
+await search.keywordInputField("iMac");
+expect(await search.selectCategory(`Mac`)).toBe(`Mac`)
+await search.buttonKeywordSearch();
+await productCount(`iMac`, 1);
+expect(await search.selectCategory("PC")).toBe(`PC`);
+await search.buttonKeywordSearch();
+expect(await search.noProductAvailableMsg()).toBe(true)
+
+//TC_SF_010
+
+expect(await search.selectCategory(`Desktops`)).toBe('Desktops');
+await search.buttonKeywordSearch();
+expect(await search.noProductAvailableMsg()).toBe(true)
+expect(await search.subCheck()).toBeChecked();
+await search.buttonKeywordSearch();
+await productCount('iMac', 1);
+
+//TC_SF_011
+
+expect(await search.selectView("List")).toContain(`product-list`);
+expect(await search.addToCartButtonsEnabled() && await search.wishlistButtonsEnabled() && await search.compareButtonEnabled()).toBe(true) ;
+
+
+const productPage: ProductDisplaypage = await search.clickOnProducImg(`iMac`);
+expect(await productPage.addProductButtons() && await productPage.wishListButtons()&& await productPage.compareButtons()).toBe(true)
+await page.goBack();
+expect(await search.selectView("Grid")).toContain(`product-grid`);
+expect(await search.addToCartButtonsEnabled() && await search.wishlistButtonsEnabled() && await search.compareButtonEnabled()).toBe(true)
+await search.clickOnProducImg(`iMac`);
+expect(await productPage.isOnProductPage()).toContain('iMac');
+expect(await productPage.addProductButtons() && await productPage.wishListButtons()&& await productPage.compareButtons()).toBe(true)
+
+//TC_SF_012
+
+await header.goToHomePage();
+expect(await homePage.isOnHomePage()).toBe(true);
+await header.productSearch(`Mac`);
+await productCount(`Mac`, 4);
+expect(await search.selectView("List")).toContain(`product-list`);
+expect(await search.addToCartButtonsEnabled() && await search.wishlistButtonsEnabled() && await search.compareButtonEnabled()).toBe(true)
+expect(await search.selectView(`Grid`)).toContain(`product-grid`);
+expect(await search.addToCartButtonsEnabled() && await search.wishlistButtonsEnabled() && await search.compareButtonEnabled()).toBe(true)
+expect(await search.clickOnProducImg(`MacBook`));
+expect(await productPage.isOnProductPage()).toBe(`MacBook`);
+
+//TC_SF_013
+await header.productSearch(`ipod Classic`);
+expect(await search.isOnSearchPage()).toBe(true);
+expect(await search.compareProductBtn()).toContain("Success: You have added iPod Classic to your product comparison!");
+
+// TC_SF_014
+await header.goToHomePage();
+expect(await homePage.isOnHomePage()).toBe(true);
+await header.productSearch(`ipod`);
+expect(await search.isOnSearchPage());
+expect(await search.selectSortBy(`Name (Z - A)`)).toContain(`Name (Z - A)`);
+expect(await search.selectShowNumber(`75`)).toContain(`75`);
+
+//TC_SF_016
+
 }
 
 
