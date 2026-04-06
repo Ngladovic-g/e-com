@@ -6,12 +6,14 @@ export class ProductDisplaypage{
     private readonly addToCartButton: Locator;
     private readonly wishlistButton: Locator;
     private readonly compareButton: Locator;
+    private readonly pageHeader: Locator;
 
 
     constructor(page:Page){
 
         this.page = page;
         this.addToCartButton = page.locator("#button-cart");
+        this.pageHeader = page.locator("h1")
         this.wishlistButton = page.locator("button[data-original-title='Add to Wish List']").nth(0);
         this.compareButton = page.locator("button[data-original-title='Compare this Product']").nth(0);
 
@@ -19,7 +21,8 @@ export class ProductDisplaypage{
 
 
 async isOnProductPage():Promise<string>{
- return this.page.title();
+
+ return await this.pageHeader.innerText() ?? ''
  
 }
 

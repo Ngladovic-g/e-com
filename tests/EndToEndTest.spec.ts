@@ -13,6 +13,8 @@ import { KeyboardKeysPage } from '../pages/keyboardKeysPage';
 import { PasswordPage } from '../pages/passwordPage';
 import { SearchPage } from '../pages/SearchPage';
 import { ProductDisplaypage } from '../pages/ProductDisplayPage';
+import { FooterPage } from '../pages/FooterPage';
+import { SiteMap } from '../pages/SiteMap';
 
 
 
@@ -552,8 +554,32 @@ expect(await search.isOnSearchPage());
 expect(await search.selectSortBy(`Name (Z - A)`)).toContain(`Name (Z - A)`);
 expect(await search.selectShowNumber(`75`)).toContain(`75`);
 
-//TC_SF_016
+//TC_SF_017
 
+const  footerPage = new FooterPage(page);
+const  siteMap: SiteMap = await footerPage.clickOnSiteMap();
+expect(await siteMap.isOnSiteMap()).toContain(`Site Map`);
+await siteMap.clickOnSearchLink();
+expect(await search.isOnSearchPage()).toBe(true);
+
+//TC_SF_018
+
+await header.productSearch(`iMac`);
+await search.clickBreadcrumb(`Search`);
+expect(await search.isOnSearchPage()).toBe(true)
+expect(await search.isBreadcrumbsVisible()).toBe(true)
+await search.clickBreadcrumb(`Home`);
+expect(await homePage.isOnHomePage()).toBe(true);
+
+//TC_SF_018
+await header.productSearch(`iPod`)
+expect(await search.isOnSearchPage()).toBe(true);
+await search.navigateToProductByKeyboard('iPod Touch');
+expect(await productPage.isOnProductPage()).toContain(`iPod Touch`);
+
+//TC_SF_019
+page.goBack();
+await expect(page).toHaveURL(/search/)
 }
 
 

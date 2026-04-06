@@ -1,6 +1,7 @@
 import { Page, expect, Locator } from "@playwright/test";
 import { ProductDisplaypage } from "./ProductDisplayPage";
 
+
 export class SearchPage {
 
     private readonly page: Page;
@@ -21,10 +22,13 @@ export class SearchPage {
     private readonly compareProduct: Locator;
     private readonly addCompareMessage: Locator;
     private readonly sortByOptions: Locator;
-    private readonly sortBy:Locator;
+    private readonly sortBy: Locator;
     private readonly showNumber: Locator;
     private readonly showNumberOptions: Locator;
-  ;
+    private readonly breadcrumbs: Locator;
+    private readonly breadcrumbList: Locator;
+    
+    
 
 
 
@@ -52,6 +56,9 @@ export class SearchPage {
         this.sortBy = page.locator("#input-sort");
         this.showNumber = page.locator("#input-limit");
         this.showNumberOptions = page.locator("#input-limit>option");
+        this.breadcrumbs = page.locator(".breadcrumb");
+        this.breadcrumbList = page.locator("ul.breadcrumb>li>a");
+        
     }
 
 
@@ -164,7 +171,7 @@ export class SearchPage {
 
     }
 
-    async selectView(view: string):Promise<string> {
+    async selectView(view: string): Promise<string> {
 
 
         if (view === "List") {
@@ -174,44 +181,44 @@ export class SearchPage {
         else {
             await this.gridView.click();
         }
-            return await this.productLayout.getAttribute("class") ?? '';
-           
-        
+        return await this.productLayout.getAttribute("class") ?? '';
+
+
     }
 
     async addToCartButtonsEnabled(): Promise<boolean> {
 
         const addCart = await this.addToCart.all();
 
-        for(const cart of addCart){
-            if(!await cart.isEnabled()) return false;
+        for (const cart of addCart) {
+            if (!await cart.isEnabled()) return false;
         }
         return true
     }
 
-    async wishlistButtonsEnabled():Promise<boolean>{
+    async wishlistButtonsEnabled(): Promise<boolean> {
 
         const wishes = await this.addToWish.all();
 
-        for(const wish of wishes){
-            if(!wish.isEnabled()) return false;
+        for (const wish of wishes) {
+            if (!wish.isEnabled()) return false;
         }
         return true;
 
     }
 
-    async compareButtonEnabled():Promise<boolean>{
+    async compareButtonEnabled(): Promise<boolean> {
 
         const comparing = await this.compareProduct.all();
 
-        for(const compare of comparing){
-            if(!compare.isEnabled()) return false;
-             
+        for (const compare of comparing) {
+            if (!compare.isEnabled()) return false;
+
         }
         return true;
     }
 
-async clickOnProducImg(product: string): Promise<ProductDisplaypage> {
+    async clickOnProducImg(product: string): Promise<ProductDisplaypage> {
 
         await this.page.locator(`img[alt='${product}']`).click();
         return new ProductDisplaypage(this.page)
@@ -219,44 +226,83 @@ async clickOnProducImg(product: string): Promise<ProductDisplaypage> {
 
     }
 
-async compareProductBtn():Promise<string>{
+    async compareProductBtn(): Promise<string> {
 
-    await this.compareProduct.click();
-    return await this.addCompareMessage.innerText()
-}
+        await this.compareProduct.click();
+        return await this.addCompareMessage.innerText()
+    }
 
-async selectSortBy(value: string):Promise<string>{
+    async selectSortBy(value: string): Promise<string> {
 
-    const sortByOption = await this.sortByOptions.all();
+        const sortByOption = await this.sortByOptions.all();
 
-    for(const option of sortByOption){
+        for (const option of sortByOption) {
 
-        const name = await option.textContent();
-        if(value === name){
-            await this.sortBy.selectOption({label:name});
-            return name;
+            const name = await option.textContent();
+            if (value === name) {
+                await this.sortBy.selectOption({ label: name });
+                return name;
+            }
+        }
+        return `No option avaliable in sort by`
+    }
+
+    async selectShowNumber(value: string): Promise<string> {
+
+        await this.showNumber.click();
+        const numbers = await this.showNumberOptions.all();
+
+
+        for (const number of numbers) {
+
+            const text = await number.textContent();
+
+            if (value === text) {
+                await this.showNumber.selectOption({ label: text! });
+                return text!;
+            }
+        }
+        return `Number option not available`
+
+    }
+
+    async isBreadcrumbsVisible():Promise<boolean>{
+
+        const isVisible = await this.breadcrumbs.isVisible();
+        if(isVisible){
+            return true
+        }
+        return false;
+    }
+
+   async clickBreadcrumb(linkText: string): Promise<void> {
+    const links = await this.breadcrumbList.all();
+
+    for (const link of links) {
+        const text = await link.textContent();
+        const cleanText = text?.trim();
+
+        if (linkText === 'Home' && await link.locator('i.fa-home').count() > 0) {
+            const href = await link.getAttribute('href');
+            await this.page.goto(href!); // 
+            return;
+        }
+
+        if (cleanText === linkText) {
+            const href = await link.getAttribute('href');
+            await this.page.goto(href!); // 
+            return;
         }
     }
-return `No option avaliable in sort by`
+    throw new Error(`Breadcrumb link "${linkText}" not found`);
 }
 
-async selectShowNumber(value: string):Promise<string>{
-
-    await this.showNumber.click();
-    const numbers = await this.showNumberOptions.all();
+async navigateToProductByKeyboard(productName: string): Promise<void> {
+    const product = this.page.locator(`a:has(img[alt='${productName}'])`);
     
-    
-   for(const number of numbers){
-
-        const text = await number.textContent();
-
-        if(value === text){
-            await this.showNumber.selectOption({label:text!});
-            return text!;
-        }
-    }
-    return `Number option not available`
-    
+    await product.focus();                    // 👈 focus directly
+    await this.page.keyboard.press('Tab');    // 👈 one Tab
+    await this.page.keyboard.press('Enter');  // 👈 open with Enter
 }
 
 }

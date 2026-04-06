@@ -116,9 +116,9 @@ export class LoginPage {
             try {
                 await expect(emailField).toBeFocused({ timeout: 200 });
                 await emailField.fill(email);
-                return; // success → exit function
+                return; 
             } catch (e) {
-                // ignore and continue tabbing
+                
             }
         }
 
