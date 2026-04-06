@@ -1,6 +1,7 @@
 import { Locator, Page, expect } from "@playwright/test";
 import { AccountPage } from "./AccountPage";
 import { RegistrationPage } from "./RegistrationPage";
+import { listen } from "node:quic";
 
 export class LoginPage {
 
@@ -115,9 +116,9 @@ export class LoginPage {
             try {
                 await expect(emailField).toBeFocused({ timeout: 200 });
                 await emailField.fill(email);
-                return; // success → exit function
+                return; 
             } catch (e) {
-                // ignore and continue tabbing
+                
             }
         }
 
@@ -141,7 +142,7 @@ export class LoginPage {
             const list = await options.textContent()
 
             if (value === list) {
-                return value;
+                return list;
             }
         }
         return `${value} is not present`;
