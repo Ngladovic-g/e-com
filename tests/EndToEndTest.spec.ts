@@ -30,7 +30,8 @@ test('Execute end to end test @end-to-end', async ({ page }) => {
 
     await page.goto(config.localHost);
     
-    await searchOption(page);
+//    await searchOption(page);
+await compareProduct(page);
     await page.waitForTimeout(5000);
     //   await wrongEmailAndPhoneFormat(page);
     //   console.log("Correct form for email and telephone checked");
@@ -582,6 +583,13 @@ expect(await productPage.isOnProductPage()).toContain(`iPod Touch`);
 //TC_SF_019
 page.goBack();
 await expect(page).toHaveURL(/search/)
+}
+
+async function compareProduct(page:Page) {
+    
+    const header = new HeaderPage(page);
+    const search = new SearchPage(page);
+    const homePage = new HomePage(page)
 
 
 //Compare product cases
@@ -644,7 +652,7 @@ await header.goToHomePage();
 expect(await homePage.isOnHomePage()).toBe(true);
 await header.productSearch(`iMac`);
 expect(await search.isOnSearchPage()).toBe(true);
-await search.clickOnProducImg(`iMac`);
+const  productPage: ProductDisplaypage =  await search.clickOnProducImg(`iMac`);
 expect(await productPage.isOnProductPage()).toContain(`iMac`);
 expect(await productDisplay.compareButtonRelatedProductsTooltip()).toContain(`Compare this Product`)
 const messages = await productDisplay.addAllRelatedProductsToCompare()
