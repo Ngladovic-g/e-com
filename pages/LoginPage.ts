@@ -1,7 +1,7 @@
 import { Locator, Page, expect } from "@playwright/test";
 import { AccountPage } from "./AccountPage";
 import { RegistrationPage } from "./RegistrationPage";
-import { listen } from "node:quic";
+
 
 export class LoginPage {
 
@@ -21,8 +21,8 @@ export class LoginPage {
         this.page = page;
         this.emailInputField = page.locator("#input-email");
         this.passwordInputField = page.locator("#input-password");
-        this.loginButton = page.locator("input[value='Login']");
-        this.loginTitle = page.locator("div>ul>li>a:has-text('Login')");
+        this.loginButton = page.locator("input.btn.btn-primary");
+        this.loginTitle = page.locator(".breadcrumb>li:has-text('Login')");
         this.warningMessage = page.locator(".alert.alert-danger.alert-dismissible");
         this.exceededAmountMsg = page.getByText("Warning: Your account has exceeded allowed number of login attempts. Please try again in 1 hour.", { exact: true });
         this.confirmationLinkMsg = page.locator(".alert.alert-success.alert-dismissible");

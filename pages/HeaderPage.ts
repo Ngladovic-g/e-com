@@ -4,6 +4,7 @@ import { LogoutPage } from './LogoutPage';
 import { SearchPage } from './SearchPage';
 import { LoginPage } from './LoginPage';
 import { HomePage } from './HomePage';
+import { DesktopsPage } from './DesktopsPage';
 
 export class HeaderPage {
 
@@ -18,6 +19,8 @@ export class HeaderPage {
     private readonly searchInputField: Locator;
     private readonly searchButton: Locator;
     private readonly homePageLogo: Locator;
+    private readonly desktopsHover:Locator;
+    private readonly showAllDesktopsLink: Locator;
 
 
 
@@ -32,6 +35,11 @@ export class HeaderPage {
         this.searchButton = page.locator("button.btn.btn-default.btn-lg");
         this.searchInputField = page.locator("input.form-control").nth(0);
         this.homePageLogo = page.locator("#logo");
+        this.desktopsHover = page.locator("li>a:has-text('Desktops')")
+        this.showAllDesktopsLink =  page.getByRole('link', { name: 'Show All Desktops' })
+        
+
+
     }
 
 
@@ -109,8 +117,15 @@ export class HeaderPage {
 
     }
 
+    async openDesktops():Promise<void>{
 
+        await this.desktopsHover.hover();
+    }
 
+    async chosseOptionFromDesktop():Promise<DesktopsPage>{
 
+        await this.showAllDesktopsLink.click();
+        return new DesktopsPage(this.page)
+    }
 
 }
