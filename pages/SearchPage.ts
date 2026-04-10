@@ -1,5 +1,6 @@
 import { Page, expect, Locator } from "@playwright/test";
 import { ProductDisplaypage } from "./ProductDisplayPage";
+import { ProductComparisonPage } from "./ProductComparisonPage";
 
 
 export class SearchPage {
@@ -17,18 +18,21 @@ export class SearchPage {
     private readonly listView: Locator;
     private readonly gridView: Locator;
     private readonly productLayout: Locator;
+    private readonly productName: Locator;
     private readonly addToCart: Locator;
     private readonly addToWish: Locator;
-    private readonly compareProduct: Locator;
-    private readonly addCompareMessage: Locator;
+    private readonly compareProductBtn: Locator;
+    private readonly productComparisonLink: Locator;
     private readonly sortByOptions: Locator;
     private readonly sortBy: Locator;
     private readonly showNumber: Locator;
     private readonly showNumberOptions: Locator;
     private readonly breadcrumbs: Locator;
     private readonly breadcrumbList: Locator;
-    
-    
+    private readonly tooltip: Locator;
+
+
+
 
 
 
@@ -36,7 +40,7 @@ export class SearchPage {
     constructor(page: Page) {
 
         this.page = page;
-        this.productCount = page.locator("div.product-layout");
+        this.productCount = page.locator("div.product-thumb");
         this.productHeader = page.locator("h4>a");
         this.noProductMsg = page.getByText('There is no product that matches the search criteria.', { exact: true });
         this.searchKeywordInputField = page.locator("#input-search");
@@ -47,18 +51,21 @@ export class SearchPage {
         this.subcategoryCheck = page.locator("input[name='sub_category']");
         this.listView = page.locator("#list-view");
         this.gridView = page.locator("#grid-view");
-        this.productLayout = page.locator(".product-layout").nth(0);
+        this.productLayout = page.locator(".product-layout");
         this.addToCart = page.locator("span:has-text('Add to Cart')")
         this.addToWish = page.locator("button[data-original-title='Add to Wish List']");
-        this.compareProduct = page.locator("button[data-original-title='Compare this Product']");
-        this.addCompareMessage = page.getByText("Success: You have added iPod Classic to your product comparison! ×", { exact: true })
+        this.compareProductBtn = page.locator("button[data-original-title='Compare this Product']");
+        this.productComparisonLink = page.getByRole('link', { name: 'product comparison' });
         this.sortByOptions = page.locator("#input-sort>option");
         this.sortBy = page.locator("#input-sort");
         this.showNumber = page.locator("#input-limit");
         this.showNumberOptions = page.locator("#input-limit>option");
         this.breadcrumbs = page.locator(".breadcrumb");
         this.breadcrumbList = page.locator("ul.breadcrumb>li>a");
-        
+        this.productName = page.locator("div.product-thumb h4 a");
+        this.tooltip = page.locator(".tooltip-inner")
+
+
     }
 
 
@@ -181,7 +188,7 @@ export class SearchPage {
         else {
             await this.gridView.click();
         }
-        return await this.productLayout.getAttribute("class") ?? '';
+        return await this.productLayout.nth(0).getAttribute("class") ?? '';
 
 
     }
@@ -209,7 +216,7 @@ export class SearchPage {
 
     async compareButtonEnabled(): Promise<boolean> {
 
-        const comparing = await this.compareProduct.all();
+        const comparing = await this.compareProductBtn.all();
 
         for (const compare of comparing) {
             if (!compare.isEnabled()) return false;
@@ -226,10 +233,51 @@ export class SearchPage {
 
     }
 
-    async compareProductBtn(): Promise<string> {
+    async addProductToCompare(value: string): Promise<boolean> {
 
-        await this.compareProduct.click();
-        return await this.addCompareMessage.innerText()
+        const productCards = await this.productLayout.count();
+
+        for (let i = 0; i < productCards; i++) {
+
+            const title = await this.productLayout.nth(i).locator(this.productName).textContent();
+            const cleanText = title?.trim();
+
+            if (value === cleanText) {
+
+                await this.productLayout.nth(i).locator(this.compareProductBtn).click();
+
+                const successMsg = this.page.getByText(`Success: You have added ${value} to your product comparison! ×`, { exact: true });
+                await successMsg.waitFor({ state: 'visible', timeout: 5000 });
+                return await successMsg.isVisible();
+            }
+        }
+        return false;
+    }
+
+    async hoverCompareText(value?: string): Promise<string> {
+
+        if (value === `compare`) {
+            await this.compareProductBtn.nth(0).hover();
+           
+            const compareTooltip = this.tooltip.filter({hasText: "Compare this Product"});
+            await compareTooltip.waitFor({ state: "visible", timeout: 5000 })
+            return await compareTooltip.textContent() ?? ''
+        }
+        else {
+            await this.addToWish.nth(0).hover();
+            
+            const wishlistTooltip = this.tooltip.filter({hasText: "Add to Wish List"});
+            await wishlistTooltip.waitFor({ state: "visible", timeout: 5000});
+            return await wishlistTooltip.textContent() ?? ''
+        }
+
+    }
+
+    async productComparisonPageLink(): Promise<ProductComparisonPage> {
+
+        await this.productComparisonLink.click();
+        return new ProductComparisonPage(this.page);
+
     }
 
     async selectSortBy(value: string): Promise<string> {
@@ -266,43 +314,49 @@ export class SearchPage {
 
     }
 
-    async isBreadcrumbsVisible():Promise<boolean>{
+    async isBreadcrumbsVisible(): Promise<boolean> {
 
         const isVisible = await this.breadcrumbs.isVisible();
-        if(isVisible){
+        if (isVisible) {
             return true
         }
         return false;
     }
 
-   async clickBreadcrumb(linkText: string): Promise<void> {
-    const links = await this.breadcrumbList.all();
+    async clickBreadcrumb(linkText: string): Promise<void> {
+        const links = await this.breadcrumbList.all();
 
-    for (const link of links) {
-        const text = await link.textContent();
-        const cleanText = text?.trim();
+        for (const link of links) {
+            const text = await link.textContent();
+            const cleanText = text?.trim();
 
-        if (linkText === 'Home' && await link.locator('i.fa-home').count() > 0) {
-            const href = await link.getAttribute('href');
-            await this.page.goto(href!); // 
-            return;
+            if (linkText === 'Home' && await link.locator('i.fa-home').count() > 0) {
+                const href = await link.getAttribute('href');
+                await this.page.goto(href!); // 
+                return;
+            }
+
+            if (cleanText === linkText) {
+                const href = await link.getAttribute('href');
+                await this.page.goto(href!); // 
+                return;
+            }
         }
-
-        if (cleanText === linkText) {
-            const href = await link.getAttribute('href');
-            await this.page.goto(href!); // 
-            return;
-        }
+        throw new Error(`Breadcrumb link "${linkText}" not found`);
     }
-    throw new Error(`Breadcrumb link "${linkText}" not found`);
-}
 
-async navigateToProductByKeyboard(productName: string): Promise<void> {
-    const product = this.page.locator(`a:has(img[alt='${productName}'])`);
-    
-    await product.focus();                    // 👈 focus directly
-    await this.page.keyboard.press('Tab');    // 👈 one Tab
-    await this.page.keyboard.press('Enter');  // 👈 open with Enter
-}
+    async navigateToProductByKeyboard(productName: string): Promise<void> {
+        const product = this.page.locator(`a:has(img[alt='${productName}'])`);
+
+        //await product.focus();                    // 👈 focus directly
+        await this.page.keyboard.press('Tab');    // 👈 one Tab
+        await product.focus();
+        await this.page.keyboard.press('Enter');  // 👈 open with Enter
+    }
+
+
+
+
+
 
 }
