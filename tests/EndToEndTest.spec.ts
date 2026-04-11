@@ -13,6 +13,10 @@ import { KeyboardKeysPage } from '../pages/keyboardKeysPage';
 import { PasswordPage } from '../pages/passwordPage';
 import { SearchPage } from '../pages/SearchPage';
 import { ProductDisplaypage } from '../pages/ProductDisplayPage';
+import { FooterPage } from '../pages/FooterPage';
+import { SiteMap } from '../pages/SiteMap';
+import { ProductComparisonPage } from '../pages/ProductComparisonPage';
+import { DesktopsPage } from '../pages/DesktopsPage';
 
 
 
@@ -26,8 +30,9 @@ test('Execute end to end test @end-to-end', async ({ page }) => {
 
     await page.goto(config.localHost);
     
-    await searchOption(page);
-    await page.waitForTimeout(5000)
+//    await searchOption(page);
+await compareProduct(page);
+    await page.waitForTimeout(5000);
     //   await wrongEmailAndPhoneFormat(page);
     //   console.log("Correct form for email and telephone checked");
 
@@ -138,14 +143,14 @@ async function logout(page: Page, email: string, password: string):Promise<void>
     async function userLogin(email: string, password: string) {
         await headerPage.clickMyAccount();
         const loginPage: LoginPage = await headerPage.clickLogin();
-        expect(await loginPage.isOnLoginPage()).toContain("Login");
+        expect(await loginPage.isOnLoginPage()).toContain(`Login`);
         const myAccount: AccountPage = await loginPage.customerLogin(email, password);
         expect(await myAccount.isOnAccountPage()).toBe(true);
     }
 
     await userLogin(email, password)
     const myAccount = new AccountPage(page);
-    await myAccount.choseOptionfromSidebar("Logout");
+    await myAccount.choseOptionfromSidebar(`Logout`);
     expect(await logoutPage.isOnLogoutPage()).toBe(true);
     await headerPage.clickMyAccount();
     expect(await headerPage.logoutButtonVisible()).toBe(true);
@@ -166,7 +171,7 @@ async function logout(page: Page, email: string, password: string):Promise<void>
     await header.clickLogout();
     await page.goBack();
     const loginPage = new LoginPage(page);
-    expect(await loginPage.isOnLoginPage()).toContain("Login");
+    expect(await loginPage.isOnLoginPage()).toContain(`Login`);
 
     //TC_LG_005
     await header.clickMyAccount();
@@ -175,8 +180,8 @@ async function logout(page: Page, email: string, password: string):Promise<void>
     //TC_LG_005
 
     const register: RegistrationPage = await header.clickRegister();
-    expect(await register.isOnRegistartionPage()).toContain("Register Account");
-    const logoutPresent = await account.choseOptionfromSidebar("Logout");
+    expect(await register.isOnRegistartionPage()).toContain(`Register Account`);
+    const logoutPresent = await account.choseOptionfromSidebar(`Logout`);
     expect(logoutPresent).toBe(false);
 
     //TC_LG_009
@@ -188,11 +193,8 @@ async function logout(page: Page, email: string, password: string):Promise<void>
     await header.clickMyAccount();
     await header.clickLogout();
     expect(await logout.logoutTitle()).toBe(true);
-    expect(await logout.breadCrumbsList("Logout")).toContain("Logout");
-    expect(await logout.pageURL()).toContain("http://localhost/opencart/upload/index.php?route=account/logout");
-    
-
-
+    expect(await logout.breadCrumbsList(`Logout`)).toContain(`Logout`);
+    expect(await logout.pageURL()).toContain(`http://localhost/opencart/upload/index.php?route=account/logout`);
 
 }
 
@@ -215,7 +217,7 @@ async function login(page: Page, email?: string, password?: string):Promise<void
     await loginPage.customerLoginButton();
 
     // Exceeded allowed number of login attempts
-    expect(await loginPage.exceededAttempts()).toContain("Warning: Your account has exceeded allowed number of login attempts. Please try again in 1 hour.");
+    expect(await loginPage.exceededAttempts()).toContain(`Warning: Your account has exceeded allowed number of login attempts. Please try again in 1 hour.`);
 
     //Passord value not present in Page source(Failing)
     //await loginPage.customerLoginButton();
@@ -226,28 +228,28 @@ async function login(page: Page, email?: string, password?: string):Promise<void
     // expect(await loginPage.warningMessagePresent()).toContain("Warning: No match for E-Mail Address and/or Password.");
 
 
-    await myAccount.choseOptionfromSidebar("Forgotten Password");
+    await myAccount.choseOptionfromSidebar(`Forgotten Password`);
     expect(await passwordPage.isOnForgotYourPasswordPage()).toBe(true);
 
     //Wrong email used and message displayed after pressing continue button
-    await passwordPage.emailInputForForgotenEmail("wadkoaw");
+    await passwordPage.emailInputForForgotenEmail(`wadkoaw`);
     await passwordPage.forgotenPasswordContniuBtn();
-    expect(await passwordPage.emailNotFound()).toContain("Warning: The E-Mail Address was not found in our records, please try again!");
+    expect(await passwordPage.emailNotFound()).toContain(`Warning: The E-Mail Address was not found in our records, please try again!`);
 
     //Correct email used, going back to login page and success email message
-    await passwordPage.emailInputForForgotenEmail(email ?? "abc@gmail.com");
+    await passwordPage.emailInputForForgotenEmail(email ?? `abc@gmail.com`);
 
     await passwordPage.forgotenPasswordContniuBtn();
     expect(await loginPage.isOnLoginPage());
-    expect(await loginPage.confirmationMsg()).toContain("An email with a confirmation link has been sent your email address.");
+    expect(await loginPage.confirmationMsg()).toContain(`An email with a confirmation link has been sent your email address.`);
 
     // select Email field using Tab keystroke
-    await loginPage.pressTabKey(email ?? '');
+    await loginPage.pressTabKey(email ?? ``);
     await keyboard.copyValue();
 
 
     //Try copy of password
-    await loginPage.customerPassword(password ?? '');
+    await loginPage.customerPassword(password ?? ``);
     await keyboard.clipboardBeforeCopy();
     await keyboard.copyValue();
     await keyboard.clipboardAftereCopy();
@@ -260,19 +262,19 @@ async function login(page: Page, email?: string, password?: string):Promise<void
     expect(await myAccount.isOnAccountPage()).toBe(true);
 
     //Change password while logged in
-    await myAccount.choseOptionfromSidebar("Password");
+    await myAccount.choseOptionfromSidebar(`Password`);
     await passwordPage.passwordChange(changePassword);
     await passwordPage.passwordConfirm(changePassword)
     await passwordPage.continueButton();
     expect(await myAccount.isOnAccountPage()).toBe(true);
-    expect(await myAccount.passwordMsgSuccessChange()).toContain("Success: Your password has been successfully updated.")
+    expect(await myAccount.passwordMsgSuccessChange()).toContain(`Success: Your password has been successfully updated.`)
     await headerPage.clickMyAccount();
     const logoutPage = await headerPage.clickLogout();
     const homePage = await logoutPage.clickContinueBtn();
     expect(await homePage.isOnHomePage()).toBe(true);
     await headerPage.clickMyAccount();
     await headerPage.clickLogin();
-    await loginPage.customerEmail(email ?? "");
+    await loginPage.customerEmail(email ?? ``);
     await loginPage.customerPassword(changePassword);
     await loginPage.customerLoginButton();
     expect(await myAccount.isOnAccountPage()).toBe(true);
@@ -296,28 +298,28 @@ async function login(page: Page, email?: string, password?: string):Promise<void
 
     //TC_LF_ 019, Ckick continue button on new customer page, and slecting different option from sidebar
     const register: RegistrationPage = await login.newCustomerContinueButton();
-    expect(await register.isOnRegistartionPage()).toContain("Register Account");
+    expect(await register.isOnRegistartionPage()).toContain(`Register Account`);
     await page.goBack();
     const account = new AccountPage(page);
-    await account.choseOptionfromSidebar("Forgotten Password");
+    await account.choseOptionfromSidebar(`Forgotten Password`);
     const pass = new PasswordPage(page);
     expect(await pass.isOnForgotYourPasswordPage()).toBe(true);
 
     //TC_LF_020 Navigating to login page from different pages
-    await account.choseOptionfromSidebar("Register");
-    expect(await register.isOnRegistartionPage()).toContain("Register Account");
-    await account.choseOptionfromSidebar("Login");
-    expect(await login.isOnLoginPage()).toContain("Login");
-    await account.choseOptionfromSidebar("Login");
-    expect(await login.isOnLoginPage()).toContain("Login");
+    await account.choseOptionfromSidebar(`Register`);
+    expect(await register.isOnRegistartionPage()).toContain(`Register Account`);
+    await account.choseOptionfromSidebar(`Login`);
+    expect(await login.isOnLoginPage()).toContain(`Login`);
+    await account.choseOptionfromSidebar(`Login`);
+    expect(await login.isOnLoginPage()).toContain(`Login`);
     await header.clickMyAccount()
     await header.clickLogin();
-    expect(await login.isOnLoginPage()).toContain("Login");
+    expect(await login.isOnLoginPage()).toContain(`Login`);
 
     //TC_LF_021 Breadcrumbs, header, url, title
 
-    expect(await login.breadcrumbsList('Login')).toContain("Login");
-    expect(await homePage.pageUrl()).toContain('http://localhost/opencart/upload/index.php?route=account/account');
+    expect(await login.breadcrumbsList(`Login`)).toContain(`Login`);
+    expect(await homePage.pageUrl()).toContain(`http://localhost/opencart/upload/index.php?route=account/account`);
     expect(await login.pageHasTitle()).toBe(true);
 
 
@@ -545,7 +547,7 @@ expect(await productPage.isOnProductPage()).toBe(`MacBook`);
 //TC_SF_013
 await header.productSearch(`ipod Classic`);
 expect(await search.isOnSearchPage()).toBe(true);
-expect(await search.compareProductBtn()).toContain("Success: You have added iPod Classic to your product comparison!");
+expect(await search.addProductToCompare(`iPod Classic`)).toBe(true);
 
 // TC_SF_014
 await header.goToHomePage();
@@ -557,6 +559,109 @@ expect(await search.selectShowNumber(`75`)).toContain(`75`);
 
 //TC_SF_017
 
+const  footerPage = new FooterPage(page);
+const  siteMap: SiteMap = await footerPage.clickOnSiteMap();
+expect(await siteMap.isOnSiteMap()).toContain(`Site Map`);
+await siteMap.clickOnSearchLink();
+expect(await search.isOnSearchPage()).toBe(true);
+
+//TC_SF_018
+
+await header.productSearch(`iMac`);
+await search.clickBreadcrumb(`Search`);
+expect(await search.isOnSearchPage()).toBe(true)
+expect(await search.isBreadcrumbsVisible()).toBe(true)
+await search.clickBreadcrumb(`Home`);
+expect(await homePage.isOnHomePage()).toBe(true);
+
+//TC_SF_018
+await header.productSearch(`iPod`)
+expect(await search.isOnSearchPage()).toBe(true);
+await search.navigateToProductByKeyboard('iPod Touch');
+expect(await productPage.isOnProductPage()).toContain(`iPod Touch`);
+
+//TC_SF_019
+page.goBack();
+await expect(page).toHaveURL(/search/)
+}
+
+async function compareProduct(page:Page) {
+    
+    const header = new HeaderPage(page);
+    const search = new SearchPage(page);
+    const homePage = new HomePage(page)
+
+
+//Compare product cases
+
+//TC_PC_001
+await header.productSearch(`ipod`);
+expect(await search.addProductToCompare(`iPod Shuffle`)).toBe(true);
+const productCompare : ProductComparisonPage = await search.productComparisonPageLink();
+expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`)
+
+//TC_PC_002
+await header.goToHomePage();
+expect(await homePage.isOnHomePage()).toBe(true);
+await header.productSearch(`iMac`);
+expect(await search.isOnSearchPage()).toBe(true);
+expect(await search.selectView(`List`)).toContain(`product-list`);
+expect(await search.hoverCompareText()).toBe(`Add to Wish List`)
+expect(await search.addProductToCompare(`iMac`)).toBe(true);
+await search.productComparisonPageLink();
+expect(await productCompare.isOnComparisonPage()).toBe(`Product Comparison`)
+
+//TC_PC_003
+
+await header.goToHomePage();
+expect(await homePage.isOnHomePage()).toBe(true);
+await header.productSearch(`iMac`);
+expect(await search.isOnSearchPage()).toBe(true);
+expect(await search.selectView(`Grid`)).toContain(`product-grid`);
+expect(await search.hoverCompareText()).toBe(`Add to Wish List`);
+expect(await search.addProductToCompare(`iMac`)).toBe(true);
+await search.productComparisonPageLink();
+expect(await productCompare.isOnComparisonPage()).toBe(`Product Comparison`)
+
+//TC_PC_004
+
+await header.openDesktops();
+const desktopsPage: DesktopsPage = await header.chosseOptionFromDesktop();
+expect(await desktopsPage.isOnDesktopsPage()).toBe(`Desktops`);
+expect(await desktopsPage.selectView(`List`)).toContain(`active`);
+expect(await desktopsPage.addProductToCompare(`Apple Cinema 30"`)).toBe(true);
+const productDisplay: ProductDisplaypage = await desktopsPage.clickOnProductComparisonLink();
+expect(await productDisplay.isOnProductPage()).toContain(`Product Comparison`);
+expect(await productCompare.validateProductTitle(`Apple Cinema 30"`)).toBe(true);
+
+//TC_PC_005
+await header.goToHomePage();
+expect(await homePage.isOnHomePage()).toBe(true);
+await header.openDesktops();
+await header.chosseOptionFromDesktop();
+expect(await desktopsPage.selectView(`Grid`)).toContain(`active`);
+expect(await desktopsPage.hoverTooltipPresent(`compare`)).toContain(`Compare this Product`);
+expect(await desktopsPage.addProductToCompare(`Canon EOS 5D`));
+await desktopsPage.clickOnProductComparisonLink();
+expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`);
+expect(await productCompare.validateProductTitle(`Canon EOS 5D`)).toBe(true);
+
+//TC_PC_006
+
+await header.goToHomePage();
+expect(await homePage.isOnHomePage()).toBe(true);
+await header.productSearch(`iMac`);
+expect(await search.isOnSearchPage()).toBe(true);
+const  productPage: ProductDisplaypage =  await search.clickOnProducImg(`iMac`);
+expect(await productPage.isOnProductPage()).toContain(`iMac`);
+expect(await productDisplay.compareButtonRelatedProductsTooltip()).toContain(`Compare this Product`)
+const messages = await productDisplay.addAllRelatedProductsToCompare()
+expect(messages.every(msg => msg.includes(`product comparison`))).toBe(true);
+await productDisplay.clickOnProductCOmparisonLink();
+expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`)
+
+
+//TC_PC_007
 }
 
 

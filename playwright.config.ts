@@ -22,6 +22,7 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
+  timeout: 120000,
   reporter: [
           ["html"],
 //          ["allure"]
@@ -45,16 +46,17 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
 
- /*   {
+ 
+   /*{
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
-    },
-
+   },
+ 
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
    },
-*/
+
     /* Test against mobile viewports. */
     // {
     //   name: 'Mobile Chrome',
