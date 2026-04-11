@@ -555,7 +555,7 @@ expect(await search.isOnSearchPage());
 expect(await search.selectSortBy(`Name (Z - A)`)).toContain(`Name (Z - A)`);
 expect(await search.selectShowNumber(`75`)).toContain(`75`);
 
-//TC_SF_016
+//TC_SF_017
 
 }
 
