@@ -523,13 +523,13 @@ expect(await search.addToCartButtonsEnabled() && await search.wishlistButtonsEna
 
 
 const productPage: ProductDisplaypage = await search.clickOnProducImg(`iMac`);
-expect(await productPage.addProductButtons() && await productPage.wishListButtons()&& await productPage.compareButtons()).toBe(true)
+expect(await productPage.addToCartProductButtons() && await productPage.wishListButtons()&& await productPage.compareButtons()).toBe(true)
 await page.goBack();
 expect(await search.selectView("Grid")).toContain(`product-grid`);
 expect(await search.addToCartButtonsEnabled() && await search.wishlistButtonsEnabled() && await search.compareButtonEnabled()).toBe(true)
 await search.clickOnProducImg(`iMac`);
 expect(await productPage.isOnProductPage()).toContain('iMac');
-expect(await productPage.addProductButtons() && await productPage.wishListButtons()&& await productPage.compareButtons()).toBe(true)
+expect(await productPage.addToCartProductButtons() && await productPage.wishListButtons()&& await productPage.compareButtons()).toBe(true)
 
 //TC_SF_012
 
@@ -589,7 +589,8 @@ async function compareProduct(page:Page) {
     
     const header = new HeaderPage(page);
     const search = new SearchPage(page);
-    const homePage = new HomePage(page)
+    const homePage = new HomePage(page);
+    const productDisplay = new ProductDisplaypage(page);
 
 
 //Compare product cases
@@ -626,11 +627,11 @@ expect(await productCompare.isOnComparisonPage()).toBe(`Product Comparison`)
 //TC_PC_004
 
 await header.openDesktops();
-const desktopsPage: DesktopsPage = await header.chosseOptionFromDesktop();
+const desktopsPage: DesktopsPage = await header.chosseShowAllDesktops();
 expect(await desktopsPage.isOnDesktopsPage()).toBe(`Desktops`);
 expect(await desktopsPage.selectView(`List`)).toContain(`active`);
 expect(await desktopsPage.addProductToCompare(`Apple Cinema 30"`)).toBe(true);
-const productDisplay: ProductDisplaypage = await desktopsPage.clickOnProductComparisonLink();
+await desktopsPage.clickOnProductComparisonLink();
 expect(await productDisplay.isOnProductPage()).toContain(`Product Comparison`);
 expect(await productCompare.validateProductTitle(`Apple Cinema 30"`)).toBe(true);
 
@@ -638,7 +639,7 @@ expect(await productCompare.validateProductTitle(`Apple Cinema 30"`)).toBe(true)
 await header.goToHomePage();
 expect(await homePage.isOnHomePage()).toBe(true);
 await header.openDesktops();
-await header.chosseOptionFromDesktop();
+await header.chosseShowAllDesktops();
 expect(await desktopsPage.selectView(`Grid`)).toContain(`active`);
 expect(await desktopsPage.hoverTooltipPresent(`compare`)).toContain(`Compare this Product`);
 expect(await desktopsPage.addProductToCompare(`Canon EOS 5D`));
@@ -657,11 +658,65 @@ expect(await productPage.isOnProductPage()).toContain(`iMac`);
 expect(await productDisplay.compareButtonRelatedProductsTooltip()).toContain(`Compare this Product`)
 const messages = await productDisplay.addAllRelatedProductsToCompare()
 expect(messages.every(msg => msg.includes(`product comparison`))).toBe(true);
-await productDisplay.clickOnProductCOmparisonLink();
+await productDisplay.clickOnProductComparisonLink();
 expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`)
 
 
 //TC_PC_007
+await header.goToHomePage();
+expect(await homePage.isOnHomePage()).toBe(true);
+expect(await homePage.compareButtonFeatureProductsTooltip()).toContain("Compare this Product");
+await homePage.addProductToComparePage(`MacBook`, `iPhone`);
+expect(await homePage.productAddedToCompareMsg()).toBe(true)
+await homePage.goToProductComparisonPage();
+expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`)
+expect(await productCompare.validateProductTitle(`MacBook`,`iPhone`)).toBe(true);
+
+//TC_PC_008
+await header.goToHomePage();
+expect(await homePage.isOnHomePage()).toBe(true);
+await header.productSearch(`iMac`);
+expect(await search.isOnSearchPage()).toBe(true);
+await search.compareLink();
+expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`);
+
+//TC_PC_009
+
+await header.openDesktops();
+await header.chosseShowAllDesktops();
+expect(await desktopsPage.isOnDesktopsPage()).toContain(`Desktops`);
+await desktopsPage.clickOnProductComparisonLink();
+expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`);
+
+//TC_PC_010
+await productCompare.removedProductsFromPage();
+expect(await productCompare.noProductSelectedForCompare()).toContain(`You have not chosen any products to compare.`)
+
+//TC_PC_011
+await productCompare.clickOnContinueButton();
+expect(await homePage.isOnHomePage()).toBe(true);
+
+//TC_PC_012
+await homePage.addProductToComparePage(`MacBook`);
+await homePage.goToProductComparisonPage();
+expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`);
+expect(await productCompare.breadcrumbPresent()).toContain(`Product Comparison`);
+expect(await productCompare.clickOnProductComparisonBreadcrumb()).toContain(`Product Comparison`);
+
+//TC_PC_013
+await productCompare.removedProductsFromPage();
+expect(await productCompare.noProductSelectedForCompare()).toContain(`You have not chosen any products to compare.`)
+await productCompare.clickOnContinueButton();
+expect(await homePage.isOnHomePage()).toBe(true);
+await header.productSearch(`iMac`);
+expect(await search.addProductToCompare(`iMac`)).toBe(true)
+await search.productNameLinkFromCompareMsg(`iMac`);
+expect(await productDisplay.isOnProductPage()).toContain(`iMac`);
+await productDisplay.addProductToCompare();
+
+expect(await productDisplay.productAddedSuccessMsg()).toBe(true);
+await productDisplay.clickOnProductComparisonLink();
+expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`)
 }
 
 

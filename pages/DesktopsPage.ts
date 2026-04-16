@@ -1,6 +1,7 @@
 
 import { Locator, Page, expect } from "@playwright/test";
 import { ProductDisplaypage } from "./ProductDisplayPage";
+import { ProductComparisonPage } from "./ProductComparisonPage";
 
 
 export class DesktopsPage {
@@ -33,7 +34,7 @@ export class DesktopsPage {
         //retunrs all addToCart buttons from page
         this.productName = page.locator("div.product-thumb h4 a");
         //returns all product names from page
-        this.productComparisonLink = page.locator("a:has-text('product comparison')");
+        this.productComparisonLink = page.locator("#compare-total");
         
         this.tooltip = page.locator('.tooltip-inner');
 
@@ -85,10 +86,10 @@ export class DesktopsPage {
     }
 
 
-    async clickOnProductComparisonLink(): Promise<ProductDisplaypage> {
+    async clickOnProductComparisonLink(): Promise<ProductComparisonPage> {
 
         await this.productComparisonLink.click();
-        return new ProductDisplaypage(this.page);
+        return new ProductComparisonPage(this.page);
     }
 
     

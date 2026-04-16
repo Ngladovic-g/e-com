@@ -30,6 +30,8 @@ export class SearchPage {
     private readonly breadcrumbs: Locator;
     private readonly breadcrumbList: Locator;
     private readonly tooltip: Locator;
+    private readonly productCompareLink: Locator;
+    
 
 
 
@@ -64,6 +66,8 @@ export class SearchPage {
         this.breadcrumbList = page.locator("ul.breadcrumb>li>a");
         this.productName = page.locator("div.product-thumb h4 a");
         this.tooltip = page.locator(".tooltip-inner")
+        this.productCompareLink = page.locator("#compare-total");
+        
 
 
     }
@@ -355,8 +359,16 @@ export class SearchPage {
     }
 
 
+async compareLink():Promise<ProductComparisonPage>{
 
+    await this.productCompareLink.click();
+    return new ProductComparisonPage(this.page);
+}
 
+async productNameLinkFromCompareMsg(value:string):Promise<ProductComparisonPage>{
 
+    await this.page.locator(`.alert>a:has-text('${value}')`).click();
+    return new ProductComparisonPage(this.page)
+}
 
 }

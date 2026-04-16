@@ -11,7 +11,8 @@ export class ProductDisplaypage {
     private readonly tooltip: Locator;
     private readonly relatedProducts: Locator;
     private readonly productComparisonLink: Locator;
-
+    private readonly mainProductCompareButton: Locator;
+    private readonly productAddedToComparisonMsg: Locator;
 
 
     constructor(page: Page) {
@@ -26,6 +27,10 @@ export class ProductDisplaypage {
         this.tooltip = page.locator(".tooltip-inner");
         this.relatedProducts = page.locator("div.product-thumb.transition");
         this.productComparisonLink = page.getByRole('link', { name: 'product comparison' })
+        this.mainProductCompareButton = page.locator(".btn-group>button[data-original-title='Compare this Product']")
+        this.productAddedToComparisonMsg = page.locator(".alert.alert-success.alert-dismissible")
+        
+
 
     }
 
@@ -36,7 +41,7 @@ export class ProductDisplaypage {
 
     }
 
-    async addProductButtons(): Promise<boolean> {
+    async addToCartProductButtons(): Promise<boolean> {
 
         const addButtons = await this.addToCartButton.all();
 
@@ -105,11 +110,24 @@ export class ProductDisplaypage {
         return successMessages
     }
 
-async clickOnProductCOmparisonLink():Promise<ProductComparisonPage>{
+async clickOnProductComparisonLink():Promise<ProductComparisonPage>{
 
     await this.productComparisonLink.click();
     return new ProductComparisonPage(this.page);
 }
+
+async addProductToCompare():Promise<void>{
+
+    await this.mainProductCompareButton.click();
+
+}
+
+async productAddedSuccessMsg():Promise<boolean>{
+
+await this.productAddedToComparisonMsg.waitFor({timeout:3000});
+return await this.productAddedToComparisonMsg.isVisible();
+}
+
 
 
 }
