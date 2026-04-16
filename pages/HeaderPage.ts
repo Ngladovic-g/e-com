@@ -122,7 +122,7 @@ export class HeaderPage {
         await this.desktopsHover.hover();
     }
 
-    async chosseOptionFromDesktop():Promise<DesktopsPage>{
+    async chosseShowAllDesktops():Promise<DesktopsPage>{
 
         await this.showAllDesktopsLink.click();
         return new DesktopsPage(this.page)
