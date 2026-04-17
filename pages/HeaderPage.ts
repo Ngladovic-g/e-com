@@ -48,6 +48,11 @@ export class HeaderPage {
        await this.homePageLogo.click();
        return new HomePage(this.page);
     }
+    async pageUrl(): Promise<string> {
+
+        return this.page.url();
+
+    }
 
     async clickMyAccount(): Promise<void> {
         try {

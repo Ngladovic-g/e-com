@@ -17,6 +17,7 @@ import { FooterPage } from '../pages/FooterPage';
 import { SiteMap } from '../pages/SiteMap';
 import { ProductComparisonPage } from '../pages/ProductComparisonPage';
 import { DesktopsPage } from '../pages/DesktopsPage';
+import { ShoppinCartPage } from '../pages/ShoppingCartPage';
 
 
 
@@ -716,7 +717,75 @@ await productDisplay.addProductToCompare();
 
 expect(await productDisplay.productAddedSuccessMsg()).toBe(true);
 await productDisplay.clickOnProductComparisonLink();
-expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`)
+expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`);
+await productCompare.removedProductsFromPage();
+expect(await productCompare.noProductSelectedForCompare()).toContain(`You have not chosen any products to compare.`);
+
+//TC_PC_014 and TC_PC_015 and TC_PC_016 and TC_PC_017 TC_PC_018 TC_PC_019 
+
+await header.goToHomePage()
+expect(await homePage.isOnHomePage()).toBe(true);
+await header.productSearch(`iMac`);
+expect(await search.isOnSearchPage()).toBe(true);
+await search.clickOnProducImg(`iMac`);
+expect(await productDisplay.isOnProductPage()).toContain(`iMac`);
+await productDisplay.addProductToCompare();
+expect(await productDisplay.productAddedSuccessMsg()).toBe(true);
+await header.productSearch(`iMac`);
+expect(await search.isOnSearchPage()).toBe(true);
+await search.clickOnProducImg(`iMac`);
+expect(await productDisplay.isOnProductPage()).toContain(`iMac`);
+await productDisplay.addProductToCompare();
+expect(await productDisplay.productAddedSuccessMsg()).toBe(true);
+await header.productSearch(`iPhone`);
+expect(await search.isOnSearchPage()).toBe(true);
+await search.clickOnProducImg(`iPhone`);
+expect(await productDisplay.isOnProductPage()).toContain(`iPhone`);
+await productDisplay.addProductToCompare();
+await header.productSearch(`MacBook`);
+expect(await search.isOnSearchPage()).toBe(true);
+await search.clickOnProducImg(`MacBook`);
+expect(await productDisplay.isOnProductPage()).toContain(`MacBook`);
+await productDisplay.addProductToCompare();
+await header.productSearch(`MacBook Air`);
+expect(await search.isOnSearchPage()).toBe(true);
+await search.clickOnProducImg(`MacBook Air`);
+expect(await productDisplay.isOnProductPage()).toContain(`MacBook Air`);
+await productDisplay.addProductToCompare();
+await header.productSearch(`MacBook Pro`);
+expect(await search.isOnSearchPage()).toBe(true);
+await search.clickOnProducImg(`MacBook Pro`);
+expect(await productDisplay.isOnProductPage()).toContain(`MacBook Pro`);
+await productDisplay.addProductToCompare();
+expect(await productDisplay.productAddedSuccessMsg()).toBe(true);
+await productDisplay.clickOnProductComparisonLink();
+expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`);
+expect(await header.pageUrl()).toContain(`compare`);
+//await expect(page).toHaveURL(/compare/)
+expect(await productCompare.numberOfProductsOnPage()).toBe(4);
+expect(await productCompare.addToCartButtonVisible()).toBe(true);
+expect(await productCompare.removeButtonVisible()).toBe(true);
+expect(await productCompare.validateProductTitle( `iPhone`, `MacBook`, `MacBook Air`, `MacBook Air`)).toBe(true);
+expect(await productCompare.validateProductTitle(`iMac`)).toBe(false);
+//TC_PC_021
+expect(await productCompare.removedProductsFromPage()).toContain(`You have not chosen any products to compare.`);
+
+//TC_PC_020
+await header.productSearch(`iMac`);
+expect(await search.isOnSearchPage()).toBe(true);
+expect(await search.addProductToCompare(`iMac`)).toBe(true);
+await header.productSearch(`iPhone`);
+expect(await search.isOnSearchPage()).toBe(true);
+expect(await search.addProductToCompare(`iPhone`)).toBe(true);
+await search.productComparisonPageLink()
+expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`);
+await productCompare.addToCartForProducts(`iMac`, `iPhone`);
+const shoppingCart: ShoppinCartPage = await productCompare.shopingCartLink();
+expect(await shoppingCart.isOnShoppingCartPage()).toContain(`Shopping Cart`)
+expect(await shoppingCart.numberOfProducts()).toBe(2)
+
+
+
 }
 
 
