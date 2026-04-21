@@ -30,17 +30,19 @@ test('Execute end to end test @end-to-end', async ({ page }) => {
     const config = new testConfig();
 
     await page.goto(config.localHost);
-    
-//    await searchOption(page);
-await compareProduct(page);
+
+    //    await searchOption(page);
+    // await compareProduct(page);
+    await productInfoPage(page);
+
     await page.waitForTimeout(5000);
     //   await wrongEmailAndPhoneFormat(page);
     //   console.log("Correct form for email and telephone checked");
 
-//    let [email, password] = await createNewUserAndFieldSpecVerification(page);
+    //    let [email, password] = await createNewUserAndFieldSpecVerification(page);
 
-//    await logout(page, email, password);
- //   console.log("User loged out and is on Home Page");
+    //    await logout(page, email, password);
+    //   console.log("User loged out and is on Home Page");
 
     //   await login(page, email, password);
     //    console.log("User is logged in and on My Account page");
@@ -49,7 +51,7 @@ await compareProduct(page);
 })
 
 
-async function createNewUserAndFieldSpecVerification(page: Page):Promise<string[]> {
+async function createNewUserAndFieldSpecVerification(page: Page): Promise<string[]> {
 
 
     let emailUsed = " Pete_Wyman63@gmail.com";
@@ -129,7 +131,7 @@ async function createNewUserAndFieldSpecVerification(page: Page):Promise<string[
 
 }
 
-async function logout(page: Page, email: string, password: string):Promise<void> {
+async function logout(page: Page, email: string, password: string): Promise<void> {
 
     //TC_LG_001
 
@@ -199,7 +201,7 @@ async function logout(page: Page, email: string, password: string):Promise<void>
 
 }
 
-async function login(page: Page, email?: string, password?: string):Promise<void> {
+async function login(page: Page, email?: string, password?: string): Promise<void> {
 
     const changePassword = '12345';
     const headerPage = new HeaderPage(page);
@@ -423,369 +425,397 @@ async function wrongEmailAndPhoneFormat(page: Page): Promise<boolean> {
     return false
 }
 
-async function searchOption(page: Page):Promise<void>{
+async function searchOption(page: Page): Promise<void> {
 
     const header = new HeaderPage(page);
     const config = new testConfig();
-    
-let email = config.username1;
-let password = config.password1;
 
-const SearchPage: SearchPage = await header.productSearch(`ipod`);
-expect(await SearchPage.resultProduct()).toBe(4);
-expect(await SearchPage.productTitle(`ipod`)).toHaveLength(4)
+    let email = config.username1;
+    let password = config.password1;
+
+    const SearchPage: SearchPage = await header.productSearch(`ipod`);
+    expect(await SearchPage.resultProduct()).toBe(4);
+    expect(await SearchPage.productTitle(`ipod`)).toHaveLength(4)
 
 
-async function productCount(name:string, count: number){
-const productCount = await SearchPage.resultProduct();
-expect(await SearchPage.resultProduct()).toBe(count);
-expect(await SearchPage.productTitle(name)).toHaveLength(productCount);
+    async function productCount(name: string, count: number) {
+        const productCount = await SearchPage.resultProduct();
+        expect(await SearchPage.resultProduct()).toBe(count);
+        expect(await SearchPage.productTitle(name)).toHaveLength(productCount);
 
+    }
+
+    //TC_SF_001
+    const search: SearchPage = await header.productSearch(`Mac`);
+    await productCount(`Mac`, 4);
+
+    //TC_SF_0002
+
+    await header.productSearch(`Fitbit`);
+    await productCount(`Fitbit`, 0);
+    expect(await search.noProductAvailableMsg()).toBe(true);
+
+    //TC_SF_003
+
+    await header.productName()
+    expect(await search.noProductAvailableMsg()).toBe(true);
+
+    //TC_SF_004
+
+    await header.clickMyAccount();
+    const loginPage: LoginPage = await header.clickLogin();
+    expect(await loginPage.isOnLoginPage()).toContain(`Login`);
+    await loginPage.customerLogin(email, password);
+    await header.productSearch(`iMac`);
+    expect(await search.isOnSearchPage()).toBe(true);
+    await productCount(`iMac`, 1)
+
+    //TC_SF_005
+    await header.productSearch(`ipod`);
+    await productCount(`ipod`, 4);
+
+    //TC_SF_006
+
+    expect(await search.clearSearchCriteria()).toBe(``)
+    expect(await search.getSearchCriteriaAttribut()).toContain(`Keywords`);
+    expect(await header.clearSearchInput()).toBe(``);
+    expect(await header.searchInputPlacholder()).toContain(`Search`);
+
+    //TC_SF_007
+
+    expect(await search.keywordInputField(`ipod`)).toBe(`ipod`)
+    await search.buttonKeywordSearch();
+    await productCount(`ipod`, 4);
+
+    //TC_SF_008
+    const homePage: HomePage = await header.goToHomePage();
+    expect(await homePage.isOnHomePage()).toBe(true);
+    await header.buttonSearch();
+    expect(await search.isOnSearchPage()).toBe(true);
+    expect(await search.tickCheckbox()).toBeChecked();
+    expect(await search.keywordInputField(`iLife`)).toBe(`iLife`)
+    await search.buttonKeywordSearch();
+    await productCount(`iMac`, 1);
+
+    //TC_SF_009
+    await header.goToHomePage();
+    expect(await homePage.isOnHomePage()).toBe(true);
+    await header.buttonSearch();
+    expect(await search.isOnSearchPage()).toBe(true);
+    await search.keywordInputField("iMac");
+    expect(await search.selectCategory(`Mac`)).toBe(`Mac`)
+    await search.buttonKeywordSearch();
+    await productCount(`iMac`, 1);
+    expect(await search.selectCategory("PC")).toBe(`PC`);
+    await search.buttonKeywordSearch();
+    expect(await search.noProductAvailableMsg()).toBe(true)
+
+    //TC_SF_010
+
+    expect(await search.selectCategory(`Desktops`)).toBe('Desktops');
+    await search.buttonKeywordSearch();
+    expect(await search.noProductAvailableMsg()).toBe(true)
+    expect(await search.subCheck()).toBeChecked();
+    await search.buttonKeywordSearch();
+    await productCount('iMac', 1);
+
+    //TC_SF_011
+
+    expect(await search.selectView("List")).toContain(`product-list`);
+    expect(await search.addToCartButtonsEnabled() && await search.wishlistButtonsEnabled() && await search.compareButtonEnabled()).toBe(true);
+
+
+    const productPage: ProductDisplaypage = await search.clickOnProducImg(`iMac`);
+    expect(await productPage.addToCartProductButtons() && await productPage.wishListButtons() && await productPage.compareButtons()).toBe(true)
+    await page.goBack();
+    expect(await search.selectView("Grid")).toContain(`product-grid`);
+    expect(await search.addToCartButtonsEnabled() && await search.wishlistButtonsEnabled() && await search.compareButtonEnabled()).toBe(true)
+    await search.clickOnProducImg(`iMac`);
+    expect(await productPage.isOnProductPage()).toContain('iMac');
+    expect(await productPage.addToCartProductButtons() && await productPage.wishListButtons() && await productPage.compareButtons()).toBe(true)
+
+    //TC_SF_012
+
+    await header.goToHomePage();
+    expect(await homePage.isOnHomePage()).toBe(true);
+    await header.productSearch(`Mac`);
+    await productCount(`Mac`, 4);
+    expect(await search.selectView("List")).toContain(`product-list`);
+    expect(await search.addToCartButtonsEnabled() && await search.wishlistButtonsEnabled() && await search.compareButtonEnabled()).toBe(true)
+    expect(await search.selectView(`Grid`)).toContain(`product-grid`);
+    expect(await search.addToCartButtonsEnabled() && await search.wishlistButtonsEnabled() && await search.compareButtonEnabled()).toBe(true)
+    expect(await search.clickOnProducImg(`MacBook`));
+    expect(await productPage.isOnProductPage()).toBe(`MacBook`);
+
+    //TC_SF_013
+    await header.productSearch(`ipod Classic`);
+    expect(await search.isOnSearchPage()).toBe(true);
+    expect(await search.addProductToCompare(`iPod Classic`)).toBe(true);
+
+    // TC_SF_014
+    await header.goToHomePage();
+    expect(await homePage.isOnHomePage()).toBe(true);
+    await header.productSearch(`ipod`);
+    expect(await search.isOnSearchPage());
+    expect(await search.selectSortBy(`Name (Z - A)`)).toContain(`Name (Z - A)`);
+    expect(await search.selectShowNumber(`75`)).toContain(`75`);
+
+    //TC_SF_017
+
+    const footerPage = new FooterPage(page);
+    const siteMap: SiteMap = await footerPage.clickOnSiteMap();
+    expect(await siteMap.isOnSiteMap()).toContain(`Site Map`);
+    await siteMap.clickOnSearchLink();
+    expect(await search.isOnSearchPage()).toBe(true);
+
+    //TC_SF_018
+
+    await header.productSearch(`iMac`);
+    await search.clickBreadcrumb(`Search`);
+    expect(await search.isOnSearchPage()).toBe(true)
+    expect(await search.isBreadcrumbsVisible()).toBe(true)
+    await search.clickBreadcrumb(`Home`);
+    expect(await homePage.isOnHomePage()).toBe(true);
+
+    //TC_SF_018
+    await header.productSearch(`iPod`)
+    expect(await search.isOnSearchPage()).toBe(true);
+    await search.navigateToProductByKeyboard('iPod Touch');
+    expect(await productPage.isOnProductPage()).toContain(`iPod Touch`);
+
+    //TC_SF_019
+    page.goBack();
+    await expect(page).toHaveURL(/search/)
 }
 
-//TC_SF_001
-const search: SearchPage = await header.productSearch(`Mac`);
-await productCount(`Mac`, 4);
+async function compareProduct(page: Page) {
 
-//TC_SF_0002
-
-await header.productSearch(`Fitbit`);
-await productCount(`Fitbit`, 0);
-expect(await search.noProductAvailableMsg()).toBe(true);
-
-//TC_SF_003
-
-await header.productName()
-expect(await search.noProductAvailableMsg()).toBe(true);
-
-//TC_SF_004
-
-await header.clickMyAccount();
-const loginPage: LoginPage = await header.clickLogin();
-expect(await loginPage.isOnLoginPage()).toContain(`Login`);
-await loginPage.customerLogin(email, password);
-await header.productSearch(`iMac`);
-expect(await search.isOnSearchPage()).toBe(true);
-await productCount(`iMac`, 1)
-
-//TC_SF_005
-await header.productSearch(`ipod`);
-await productCount(`ipod`, 4);
-
-//TC_SF_006
-
-expect(await search.clearSearchCriteria()).toBe(``)
-expect(await search.getSearchCriteriaAttribut()).toContain(`Keywords`);
-expect(await header.clearSearchInput()).toBe(``);
-expect(await header.searchInputPlacholder()).toContain(`Search`);
-
-//TC_SF_007
-
-expect(await search.keywordInputField(`ipod`)).toBe(`ipod`)
-await search.buttonKeywordSearch();
-await productCount(`ipod`, 4);
-
-//TC_SF_008
-const homePage: HomePage = await header.goToHomePage();
-expect(await homePage.isOnHomePage()).toBe(true);
-await header.buttonSearch();
-expect(await search.isOnSearchPage()).toBe(true);
-expect(await search.tickCheckbox()).toBeChecked();
-expect(await search.keywordInputField(`iLife`)).toBe(`iLife`)
-await search.buttonKeywordSearch();
-await productCount(`iMac`, 1);
-
-//TC_SF_009
-await header.goToHomePage();
-expect(await homePage.isOnHomePage()).toBe(true);
-await header.buttonSearch();
-expect(await search.isOnSearchPage()).toBe(true);
-await search.keywordInputField("iMac");
-expect(await search.selectCategory(`Mac`)).toBe(`Mac`)
-await search.buttonKeywordSearch();
-await productCount(`iMac`, 1);
-expect(await search.selectCategory("PC")).toBe(`PC`);
-await search.buttonKeywordSearch();
-expect(await search.noProductAvailableMsg()).toBe(true)
-
-//TC_SF_010
-
-expect(await search.selectCategory(`Desktops`)).toBe('Desktops');
-await search.buttonKeywordSearch();
-expect(await search.noProductAvailableMsg()).toBe(true)
-expect(await search.subCheck()).toBeChecked();
-await search.buttonKeywordSearch();
-await productCount('iMac', 1);
-
-//TC_SF_011
-
-expect(await search.selectView("List")).toContain(`product-list`);
-expect(await search.addToCartButtonsEnabled() && await search.wishlistButtonsEnabled() && await search.compareButtonEnabled()).toBe(true) ;
-
-
-const productPage: ProductDisplaypage = await search.clickOnProducImg(`iMac`);
-expect(await productPage.addToCartProductButtons() && await productPage.wishListButtons()&& await productPage.compareButtons()).toBe(true)
-await page.goBack();
-expect(await search.selectView("Grid")).toContain(`product-grid`);
-expect(await search.addToCartButtonsEnabled() && await search.wishlistButtonsEnabled() && await search.compareButtonEnabled()).toBe(true)
-await search.clickOnProducImg(`iMac`);
-expect(await productPage.isOnProductPage()).toContain('iMac');
-expect(await productPage.addToCartProductButtons() && await productPage.wishListButtons()&& await productPage.compareButtons()).toBe(true)
-
-//TC_SF_012
-
-await header.goToHomePage();
-expect(await homePage.isOnHomePage()).toBe(true);
-await header.productSearch(`Mac`);
-await productCount(`Mac`, 4);
-expect(await search.selectView("List")).toContain(`product-list`);
-expect(await search.addToCartButtonsEnabled() && await search.wishlistButtonsEnabled() && await search.compareButtonEnabled()).toBe(true)
-expect(await search.selectView(`Grid`)).toContain(`product-grid`);
-expect(await search.addToCartButtonsEnabled() && await search.wishlistButtonsEnabled() && await search.compareButtonEnabled()).toBe(true)
-expect(await search.clickOnProducImg(`MacBook`));
-expect(await productPage.isOnProductPage()).toBe(`MacBook`);
-
-//TC_SF_013
-await header.productSearch(`ipod Classic`);
-expect(await search.isOnSearchPage()).toBe(true);
-expect(await search.addProductToCompare(`iPod Classic`)).toBe(true);
-
-// TC_SF_014
-await header.goToHomePage();
-expect(await homePage.isOnHomePage()).toBe(true);
-await header.productSearch(`ipod`);
-expect(await search.isOnSearchPage());
-expect(await search.selectSortBy(`Name (Z - A)`)).toContain(`Name (Z - A)`);
-expect(await search.selectShowNumber(`75`)).toContain(`75`);
-
-//TC_SF_017
-
-const  footerPage = new FooterPage(page);
-const  siteMap: SiteMap = await footerPage.clickOnSiteMap();
-expect(await siteMap.isOnSiteMap()).toContain(`Site Map`);
-await siteMap.clickOnSearchLink();
-expect(await search.isOnSearchPage()).toBe(true);
-
-//TC_SF_018
-
-await header.productSearch(`iMac`);
-await search.clickBreadcrumb(`Search`);
-expect(await search.isOnSearchPage()).toBe(true)
-expect(await search.isBreadcrumbsVisible()).toBe(true)
-await search.clickBreadcrumb(`Home`);
-expect(await homePage.isOnHomePage()).toBe(true);
-
-//TC_SF_018
-await header.productSearch(`iPod`)
-expect(await search.isOnSearchPage()).toBe(true);
-await search.navigateToProductByKeyboard('iPod Touch');
-expect(await productPage.isOnProductPage()).toContain(`iPod Touch`);
-
-//TC_SF_019
-page.goBack();
-await expect(page).toHaveURL(/search/)
-}
-
-async function compareProduct(page:Page) {
-    
     const header = new HeaderPage(page);
     const search = new SearchPage(page);
     const homePage = new HomePage(page);
     const productDisplay = new ProductDisplaypage(page);
 
 
-//Compare product cases
+    //Compare product cases
 
-//TC_PC_001
-await header.productSearch(`ipod`);
-expect(await search.addProductToCompare(`iPod Shuffle`)).toBe(true);
-const productCompare : ProductComparisonPage = await search.productComparisonPageLink();
-expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`)
+    //TC_PC_001
+    await header.productSearch(`ipod`);
+    expect(await search.addProductToCompare(`iPod Shuffle`)).toBe(true);
+    const productCompare: ProductComparisonPage = await search.productComparisonPageLink();
+    expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`)
 
-//TC_PC_002
-await header.goToHomePage();
-expect(await homePage.isOnHomePage()).toBe(true);
-await header.productSearch(`iMac`);
-expect(await search.isOnSearchPage()).toBe(true);
-expect(await search.selectView(`List`)).toContain(`product-list`);
-expect(await search.hoverCompareText()).toBe(`Add to Wish List`)
-expect(await search.addProductToCompare(`iMac`)).toBe(true);
-await search.productComparisonPageLink();
-expect(await productCompare.isOnComparisonPage()).toBe(`Product Comparison`)
+    //TC_PC_002
+    await header.goToHomePage();
+    expect(await homePage.isOnHomePage()).toBe(true);
+    await header.productSearch(`iMac`);
+    expect(await search.isOnSearchPage()).toBe(true);
+    expect(await search.selectView(`List`)).toContain(`product-list`);
+    expect(await search.hoverCompareText()).toBe(`Add to Wish List`)
+    expect(await search.addProductToCompare(`iMac`)).toBe(true);
+    await search.productComparisonPageLink();
+    expect(await productCompare.isOnComparisonPage()).toBe(`Product Comparison`)
 
-//TC_PC_003
+    //TC_PC_003
 
-await header.goToHomePage();
-expect(await homePage.isOnHomePage()).toBe(true);
-await header.productSearch(`iMac`);
-expect(await search.isOnSearchPage()).toBe(true);
-expect(await search.selectView(`Grid`)).toContain(`product-grid`);
-expect(await search.hoverCompareText()).toBe(`Add to Wish List`);
-expect(await search.addProductToCompare(`iMac`)).toBe(true);
-await search.productComparisonPageLink();
-expect(await productCompare.isOnComparisonPage()).toBe(`Product Comparison`)
+    await header.goToHomePage();
+    expect(await homePage.isOnHomePage()).toBe(true);
+    await header.productSearch(`iMac`);
+    expect(await search.isOnSearchPage()).toBe(true);
+    expect(await search.selectView(`Grid`)).toContain(`product-grid`);
+    expect(await search.hoverCompareText()).toBe(`Add to Wish List`);
+    expect(await search.addProductToCompare(`iMac`)).toBe(true);
+    await search.productComparisonPageLink();
+    expect(await productCompare.isOnComparisonPage()).toBe(`Product Comparison`)
 
-//TC_PC_004
+    //TC_PC_004
 
-await header.openDesktops();
-const desktopsPage: DesktopsPage = await header.chosseShowAllDesktops();
-expect(await desktopsPage.isOnDesktopsPage()).toBe(`Desktops`);
-expect(await desktopsPage.selectView(`List`)).toContain(`active`);
-expect(await desktopsPage.addProductToCompare(`Apple Cinema 30"`)).toBe(true);
-await desktopsPage.clickOnProductComparisonLink();
-expect(await productDisplay.isOnProductPage()).toContain(`Product Comparison`);
-expect(await productCompare.validateProductTitle(`Apple Cinema 30"`)).toBe(true);
+    await header.openDesktops();
+    const desktopsPage: DesktopsPage = await header.chosseShowAllDesktops();
+    expect(await desktopsPage.isOnDesktopsPage()).toBe(`Desktops`);
+    expect(await desktopsPage.selectView(`List`)).toContain(`active`);
+    expect(await desktopsPage.addProductToCompare(`Apple Cinema 30"`)).toBe(true);
+    await desktopsPage.clickOnProductComparisonLink();
+    expect(await productDisplay.isOnProductPage()).toContain(`Product Comparison`);
+    expect(await productCompare.validateProductTitle(`Apple Cinema 30"`)).toBe(true);
 
-//TC_PC_005
-await header.goToHomePage();
-expect(await homePage.isOnHomePage()).toBe(true);
-await header.openDesktops();
-await header.chosseShowAllDesktops();
-expect(await desktopsPage.selectView(`Grid`)).toContain(`active`);
-expect(await desktopsPage.hoverTooltipPresent(`compare`)).toContain(`Compare this Product`);
-expect(await desktopsPage.addProductToCompare(`Canon EOS 5D`));
-await desktopsPage.clickOnProductComparisonLink();
-expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`);
-expect(await productCompare.validateProductTitle(`Canon EOS 5D`)).toBe(true);
+    //TC_PC_005
+    await header.goToHomePage();
+    expect(await homePage.isOnHomePage()).toBe(true);
+    await header.openDesktops();
+    await header.chosseShowAllDesktops();
+    expect(await desktopsPage.selectView(`Grid`)).toContain(`active`);
+    expect(await desktopsPage.hoverTooltipPresent(`compare`)).toContain(`Compare this Product`);
+    expect(await desktopsPage.addProductToCompare(`Canon EOS 5D`));
+    await desktopsPage.clickOnProductComparisonLink();
+    expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`);
+    expect(await productCompare.validateProductTitle(`Canon EOS 5D`)).toBe(true);
 
-//TC_PC_006
+    //TC_PC_006
 
-await header.goToHomePage();
-expect(await homePage.isOnHomePage()).toBe(true);
-await header.productSearch(`iMac`);
-expect(await search.isOnSearchPage()).toBe(true);
-const  productPage: ProductDisplaypage =  await search.clickOnProducImg(`iMac`);
-expect(await productPage.isOnProductPage()).toContain(`iMac`);
-expect(await productDisplay.compareButtonRelatedProductsTooltip()).toContain(`Compare this Product`)
-const messages = await productDisplay.addAllRelatedProductsToCompare()
-expect(messages.every(msg => msg.includes(`product comparison`))).toBe(true);
-await productDisplay.clickOnProductComparisonLink();
-expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`)
+    await header.goToHomePage();
+    expect(await homePage.isOnHomePage()).toBe(true);
+    await header.productSearch(`iMac`);
+    expect(await search.isOnSearchPage()).toBe(true);
+    const productPage: ProductDisplaypage = await search.clickOnProducImg(`iMac`);
+    expect(await productPage.isOnProductPage()).toContain(`iMac`);
+    expect(await productDisplay.compareButtonRelatedProductsTooltip()).toContain(`Compare this Product`)
+    const messages = await productDisplay.addAllRelatedProductsToCompare()
+    expect(messages.every(msg => msg.includes(`product comparison`))).toBe(true);
+    await productDisplay.clickOnProductComparisonLink();
+    expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`)
 
 
-//TC_PC_007
-await header.goToHomePage();
-expect(await homePage.isOnHomePage()).toBe(true);
-expect(await homePage.compareButtonFeatureProductsTooltip()).toContain("Compare this Product");
-await homePage.addProductToComparePage(`MacBook`, `iPhone`);
-expect(await homePage.productAddedToCompareMsg()).toBe(true)
-await homePage.goToProductComparisonPage();
-expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`)
-expect(await productCompare.validateProductTitle(`MacBook`,`iPhone`)).toBe(true);
+    //TC_PC_007
+    await header.goToHomePage();
+    expect(await homePage.isOnHomePage()).toBe(true);
+    expect(await homePage.compareButtonFeatureProductsTooltip()).toContain("Compare this Product");
+    await homePage.addProductToComparePage(`MacBook`, `iPhone`);
+    expect(await homePage.productAddedToCompareMsg()).toBe(true)
+    await homePage.goToProductComparisonPage();
+    expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`)
+    expect(await productCompare.validateProductTitle(`MacBook`, `iPhone`)).toBe(true);
 
-//TC_PC_008
-await header.goToHomePage();
-expect(await homePage.isOnHomePage()).toBe(true);
-await header.productSearch(`iMac`);
-expect(await search.isOnSearchPage()).toBe(true);
-await search.compareLink();
-expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`);
+    //TC_PC_008
+    await header.goToHomePage();
+    expect(await homePage.isOnHomePage()).toBe(true);
+    await header.productSearch(`iMac`);
+    expect(await search.isOnSearchPage()).toBe(true);
+    await search.compareLink();
+    expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`);
 
-//TC_PC_009
+    //TC_PC_009
 
-await header.openDesktops();
-await header.chosseShowAllDesktops();
-expect(await desktopsPage.isOnDesktopsPage()).toContain(`Desktops`);
-await desktopsPage.clickOnProductComparisonLink();
-expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`);
+    await header.openDesktops();
+    await header.chosseShowAllDesktops();
+    expect(await desktopsPage.isOnDesktopsPage()).toContain(`Desktops`);
+    await desktopsPage.clickOnProductComparisonLink();
+    expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`);
 
-//TC_PC_010
-await productCompare.removedProductsFromPage();
-expect(await productCompare.noProductSelectedForCompare()).toContain(`You have not chosen any products to compare.`)
+    //TC_PC_010
+    await productCompare.removedProductsFromPage();
+    expect(await productCompare.noProductSelectedForCompare()).toContain(`You have not chosen any products to compare.`)
 
-//TC_PC_011
-await productCompare.clickOnContinueButton();
-expect(await homePage.isOnHomePage()).toBe(true);
+    //TC_PC_011
+    await productCompare.clickOnContinueButton();
+    expect(await homePage.isOnHomePage()).toBe(true);
 
-//TC_PC_012
-await homePage.addProductToComparePage(`MacBook`);
-await homePage.goToProductComparisonPage();
-expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`);
-expect(await productCompare.breadcrumbPresent()).toContain(`Product Comparison`);
-expect(await productCompare.clickOnProductComparisonBreadcrumb()).toContain(`Product Comparison`);
+    //TC_PC_012
+    await homePage.addProductToComparePage(`MacBook`);
+    await homePage.goToProductComparisonPage();
+    expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`);
+    expect(await productCompare.breadcrumbPresent()).toContain(`Product Comparison`);
+    expect(await productCompare.clickOnProductComparisonBreadcrumb()).toContain(`Product Comparison`);
 
-//TC_PC_013
-await productCompare.removedProductsFromPage();
-expect(await productCompare.noProductSelectedForCompare()).toContain(`You have not chosen any products to compare.`)
-await productCompare.clickOnContinueButton();
-expect(await homePage.isOnHomePage()).toBe(true);
-await header.productSearch(`iMac`);
-expect(await search.addProductToCompare(`iMac`)).toBe(true)
-await search.productNameLinkFromCompareMsg(`iMac`);
-expect(await productDisplay.isOnProductPage()).toContain(`iMac`);
-await productDisplay.addProductToCompare();
+    //TC_PC_013
+    await productCompare.removedProductsFromPage();
+    expect(await productCompare.noProductSelectedForCompare()).toContain(`You have not chosen any products to compare.`)
+    await productCompare.clickOnContinueButton();
+    expect(await homePage.isOnHomePage()).toBe(true);
+    await header.productSearch(`iMac`);
+    expect(await search.addProductToCompare(`iMac`)).toBe(true)
+    await search.productNameLinkFromCompareMsg(`iMac`);
+    expect(await productDisplay.isOnProductPage()).toContain(`iMac`);
+    await productDisplay.addProductToCompare();
 
-expect(await productDisplay.productAddedSuccessMsg()).toBe(true);
-await productDisplay.clickOnProductComparisonLink();
-expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`);
-await productCompare.removedProductsFromPage();
-expect(await productCompare.noProductSelectedForCompare()).toContain(`You have not chosen any products to compare.`);
+    expect(await productDisplay.productAddedSuccessMsg()).toBe(true);
+    await productDisplay.clickOnProductComparisonLink();
+    expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`);
+    await productCompare.removedProductsFromPage();
+    expect(await productCompare.noProductSelectedForCompare()).toContain(`You have not chosen any products to compare.`);
 
-//TC_PC_014 and TC_PC_015 and TC_PC_016 and TC_PC_017 TC_PC_018 TC_PC_019 
+    //TC_PC_014 and TC_PC_015 and TC_PC_016 and TC_PC_017 TC_PC_018 TC_PC_019 
 
-await header.goToHomePage()
-expect(await homePage.isOnHomePage()).toBe(true);
-await header.productSearch(`iMac`);
-expect(await search.isOnSearchPage()).toBe(true);
-await search.clickOnProducImg(`iMac`);
-expect(await productDisplay.isOnProductPage()).toContain(`iMac`);
-await productDisplay.addProductToCompare();
-expect(await productDisplay.productAddedSuccessMsg()).toBe(true);
-await header.productSearch(`iMac`);
-expect(await search.isOnSearchPage()).toBe(true);
-await search.clickOnProducImg(`iMac`);
-expect(await productDisplay.isOnProductPage()).toContain(`iMac`);
-await productDisplay.addProductToCompare();
-expect(await productDisplay.productAddedSuccessMsg()).toBe(true);
-await header.productSearch(`iPhone`);
-expect(await search.isOnSearchPage()).toBe(true);
-await search.clickOnProducImg(`iPhone`);
-expect(await productDisplay.isOnProductPage()).toContain(`iPhone`);
-await productDisplay.addProductToCompare();
-await header.productSearch(`MacBook`);
-expect(await search.isOnSearchPage()).toBe(true);
-await search.clickOnProducImg(`MacBook`);
-expect(await productDisplay.isOnProductPage()).toContain(`MacBook`);
-await productDisplay.addProductToCompare();
-await header.productSearch(`MacBook Air`);
-expect(await search.isOnSearchPage()).toBe(true);
-await search.clickOnProducImg(`MacBook Air`);
-expect(await productDisplay.isOnProductPage()).toContain(`MacBook Air`);
-await productDisplay.addProductToCompare();
-await header.productSearch(`MacBook Pro`);
-expect(await search.isOnSearchPage()).toBe(true);
-await search.clickOnProducImg(`MacBook Pro`);
-expect(await productDisplay.isOnProductPage()).toContain(`MacBook Pro`);
-await productDisplay.addProductToCompare();
-expect(await productDisplay.productAddedSuccessMsg()).toBe(true);
-await productDisplay.clickOnProductComparisonLink();
-expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`);
-expect(await header.pageUrl()).toContain(`compare`);
-//await expect(page).toHaveURL(/compare/)
-expect(await productCompare.numberOfProductsOnPage()).toBe(4);
-expect(await productCompare.addToCartButtonVisible()).toBe(true);
-expect(await productCompare.removeButtonVisible()).toBe(true);
-expect(await productCompare.validateProductTitle( `iPhone`, `MacBook`, `MacBook Air`, `MacBook Air`)).toBe(true);
-expect(await productCompare.validateProductTitle(`iMac`)).toBe(false);
-//TC_PC_021
-expect(await productCompare.removedProductsFromPage()).toContain(`You have not chosen any products to compare.`);
+    await header.goToHomePage()
+    expect(await homePage.isOnHomePage()).toBe(true);
+    await header.productSearch(`iMac`);
+    expect(await search.isOnSearchPage()).toBe(true);
+    await search.clickOnProducImg(`iMac`);
+    expect(await productDisplay.isOnProductPage()).toContain(`iMac`);
+    await productDisplay.addProductToCompare();
+    expect(await productDisplay.productAddedSuccessMsg()).toBe(true);
+    await header.productSearch(`iMac`);
+    expect(await search.isOnSearchPage()).toBe(true);
+    await search.clickOnProducImg(`iMac`);
+    expect(await productDisplay.isOnProductPage()).toContain(`iMac`);
+    await productDisplay.addProductToCompare();
+    expect(await productDisplay.productAddedSuccessMsg()).toBe(true);
+    await header.productSearch(`iPhone`);
+    expect(await search.isOnSearchPage()).toBe(true);
+    await search.clickOnProducImg(`iPhone`);
+    expect(await productDisplay.isOnProductPage()).toContain(`iPhone`);
+    await productDisplay.addProductToCompare();
+    await header.productSearch(`MacBook`);
+    expect(await search.isOnSearchPage()).toBe(true);
+    await search.clickOnProducImg(`MacBook`);
+    expect(await productDisplay.isOnProductPage()).toContain(`MacBook`);
+    await productDisplay.addProductToCompare();
+    await header.productSearch(`MacBook Air`);
+    expect(await search.isOnSearchPage()).toBe(true);
+    await search.clickOnProducImg(`MacBook Air`);
+    expect(await productDisplay.isOnProductPage()).toContain(`MacBook Air`);
+    await productDisplay.addProductToCompare();
+    await header.productSearch(`MacBook Pro`);
+    expect(await search.isOnSearchPage()).toBe(true);
+    await search.clickOnProducImg(`MacBook Pro`);
+    expect(await productDisplay.isOnProductPage()).toContain(`MacBook Pro`);
+    await productDisplay.addProductToCompare();
+    expect(await productDisplay.productAddedSuccessMsg()).toBe(true);
+    await productDisplay.clickOnProductComparisonLink();
+    expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`);
+    expect(await header.pageUrl()).toContain(`compare`);
+    //await expect(page).toHaveURL(/compare/)
+    expect(await productCompare.numberOfProductsOnPage()).toBe(4);
+    expect(await productCompare.addToCartButtonVisible()).toBe(true);
+    expect(await productCompare.removeButtonVisible()).toBe(true);
+    expect(await productCompare.validateProductTitle(`iPhone`, `MacBook`, `MacBook Air`, `MacBook Air`)).toBe(true);
+    expect(await productCompare.validateProductTitle(`iMac`)).toBe(false);
+    //TC_PC_021
+    expect(await productCompare.removedProductsFromPage()).toContain(`You have not chosen any products to compare.`);
 
-//TC_PC_020
-await header.productSearch(`iMac`);
-expect(await search.isOnSearchPage()).toBe(true);
-expect(await search.addProductToCompare(`iMac`)).toBe(true);
-await header.productSearch(`iPhone`);
-expect(await search.isOnSearchPage()).toBe(true);
-expect(await search.addProductToCompare(`iPhone`)).toBe(true);
-await search.productComparisonPageLink()
-expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`);
-await productCompare.addToCartForProducts(`iMac`, `iPhone`);
-const shoppingCart: ShoppinCartPage = await productCompare.shopingCartLink();
-expect(await shoppingCart.isOnShoppingCartPage()).toContain(`Shopping Cart`)
-expect(await shoppingCart.numberOfProducts()).toBe(2)
+    //TC_PC_020
+    await header.productSearch(`iMac`);
+    expect(await search.isOnSearchPage()).toBe(true);
+    expect(await search.addProductToCompare(`iMac`)).toBe(true);
+    await header.productSearch(`iPhone`);
+    expect(await search.isOnSearchPage()).toBe(true);
+    expect(await search.addProductToCompare(`iPhone`)).toBe(true);
+    await search.productComparisonPageLink()
+    expect(await productCompare.isOnComparisonPage()).toContain(`Product Comparison`);
+    await productCompare.addToCartForProducts(`iMac`, `iPhone`);
+    const shoppingCart: ShoppinCartPage = await productCompare.shopingCartLink();
+    expect(await shoppingCart.isOnShoppingCartPage()).toContain(`Shopping Cart`)
+    expect(await shoppingCart.numberOfProducts()).toBe(2)
 
+}
+async function productInfoPage(page: Page): Promise<void> {
+
+    const header = new HeaderPage(page);
+    const search = new SearchPage(page)
+    const productPage = new ProductDisplaypage(page);
+
+    //TC_PDP_001, TC_PDP_002
+    await header.productSearch(`iMac`);
+    expect(await search.isOnSearchPage()).toBe(true);
+    await search.clickOnProducImg(`iMac`);
+    expect(await productPage.isOnProductPage()).toContain(`iMac`);
+    await productPage.clickOnProductImg("Main");
+    await productPage.verifyImageNavigation();
+    expect(await productPage.isOnProductPage()).toContain(`iMac`);
+    await productPage.clickOnProductImg("Other");
+    await productPage.verifyImageNavigation();
+    expect(await productPage.isOnProductPage()).toContain(`iMac`);
+    expect(await productPage.productBrand(`Apple`)).toContain(`Apple`);
+    expect(await productPage.codeOfProduct()).toContain(`Product Code: Product 14`)
+
+    //TC_PDP_003
+    expect(await productPage.availabilityOfProduct('In Stock')).toContain(`Availability: In Stock`)
+    const price = await productPage.priceWithoutTax();
+    expect(`$${price.toFixed(2)}`).toBe(`$100.00`);
+    const taxedPrice = await productPage.priceWithATax();
+    expect(`$${taxedPrice.toFixed(2)}`).toBe(`$122.00`);
 
 
 }
+
 
 

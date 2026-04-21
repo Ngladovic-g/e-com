@@ -13,6 +13,17 @@ export class ProductDisplaypage {
     private readonly productComparisonLink: Locator;
     private readonly mainProductCompareButton: Locator;
     private readonly productAddedToComparisonMsg: Locator;
+    private readonly productMainImg: Locator;
+    private readonly productAdditionalImg: Locator;
+    private readonly imagesPageCounter: Locator;
+    private readonly nextImgButton: Locator;
+    private readonly previousImgButton: Locator;
+    private readonly closeImgButton: Locator;
+    private readonly priceBeforeTax: Locator;
+    private readonly brand: Locator;
+    private readonly productCode: Locator;
+    private readonly availabilityProduct: Locator;
+    private readonly priceAfterTax: Locator;
 
 
     constructor(page: Page) {
@@ -29,8 +40,17 @@ export class ProductDisplaypage {
         this.productComparisonLink = page.getByRole('link', { name: 'product comparison' })
         this.mainProductCompareButton = page.locator(".btn-group>button[data-original-title='Compare this Product']")
         this.productAddedToComparisonMsg = page.locator(".alert.alert-success.alert-dismissible")
-        
-
+        this.productMainImg = page.locator(".thumbnail").nth(0);
+        this.productAdditionalImg = page.locator(".thumbnail").nth(1)
+        this.imagesPageCounter = page.locator(".mfp-counter");
+        this.nextImgButton = page.locator("button[title='Next (Right arrow key)']");
+        this.previousImgButton = page.locator("button[title='Previous (Left arrow key)']");
+        this.closeImgButton = page.locator("button[title='Close (Esc)']");
+        this.brand = page.locator(".list-unstyled>li:has-text('Brand')");
+        this.priceBeforeTax = page.locator(".list-unstyled>li:has-text('Ex Tax:')")
+        this.priceAfterTax = page.locator(".list-unstyled>li>h2")
+        this.productCode = page.locator("ul>li:has-text('Product Code:')");
+        this.availabilityProduct = page.locator("ul>li:has-text('Availability')")
 
     }
 
@@ -64,10 +84,10 @@ export class ProductDisplaypage {
 
     async compareButtons(): Promise<boolean> {
 
-        const compareButton = await this.compareButton.all();
+        const compareButtons = await this.compareButton.all();
 
-        for (const copareButton of compareButton) {
-            if (!copareButton.isEnabled()) return false;
+        for (const compareButton of compareButtons) {
+            if (!compareButton.isEnabled()) return false;
         }
         return true
     }
@@ -81,8 +101,8 @@ export class ProductDisplaypage {
             await this.relatedProducts.nth(i).locator(this.compareButton).hover();
             const tooltip = this.tooltip.filter({ hasText: "Compare this Product" });
             await tooltip.waitFor({ state: "visible", timeout: 5000 });
-            const text = await tooltip.textContent() ?? '';
-            return text
+            return await tooltip.textContent() ?? '';
+
         }
         return ''
     }
@@ -94,40 +114,107 @@ export class ProductDisplaypage {
 
         for (let i = 0; i < counts; i++) {
 
-            const name = await this.relatedProducts.nth(i).locator('div>h4>a').textContent();
-            const cleanName = name?.trim();
-            
+            const cleanName = (await this.relatedProducts.nth(i).locator('div>h4>a').textContent())?.trim();
 
             await this.relatedProducts.nth(i).locator(this.compareButton).click();
 
             const successMsg = this.page.locator('div.alert-success').filter({ hasText: cleanName });
             await successMsg.waitFor({ state: "visible", timeout: 5000 });
 
-            const text = await successMsg.textContent() ?? '';
-            successMessages.push(text);
+            successMessages.push(await successMsg.innerText() ?? '');
+
 
         }
         return successMessages
     }
 
-async clickOnProductComparisonLink():Promise<ProductComparisonPage>{
+    async clickOnProductComparisonLink(): Promise<ProductComparisonPage> {
 
-    await this.productComparisonLink.click();
-    return new ProductComparisonPage(this.page);
-}
+        await this.productComparisonLink.click();
+        return new ProductComparisonPage(this.page);
+    }
 
-async addProductToCompare():Promise<void>{
+    async addProductToCompare(): Promise<void> {
 
-    await this.mainProductCompareButton.click();
+        await this.mainProductCompareButton.click();
 
-}
+    }
 
-async productAddedSuccessMsg():Promise<boolean>{
+    async productAddedSuccessMsg(): Promise<boolean> {
 
-await this.productAddedToComparisonMsg.waitFor({timeout:3000});
-return await this.productAddedToComparisonMsg.isVisible();
-}
+        await this.productAddedToComparisonMsg.waitFor({ timeout: 3000 });
+        return this.productAddedToComparisonMsg.isVisible();
+    }
+
+    async clickOnProductImg(value: string): Promise<void> {
+
+        if (value === "Main") {
+
+            await this.productMainImg.click();
+        }
+        else if (value === "Other") {
+            await this.productAdditionalImg.click();
+        }
+    }
 
 
+    async verifyImageNavigation(): Promise<void> {
+        const counterText = await this.imagesPageCounter.textContent();
+        const total = parseInt(counterText?.split('of')[1].trim() ?? '0');
+        const current = parseInt(counterText?.split('of')[0].trim() ?? '1');
 
+        // go forward through all images
+        for (let i = current + 1; i <= total; i++) {
+            await this.nextImgButton.click();
+            await expect(this.imagesPageCounter).toHaveText(`${i} of ${total}`);
+        }
+
+        // go backward through all images
+        for (let i = total - 1; i >= 1; i--) {
+            await this.previousImgButton.click();
+            await expect(this.imagesPageCounter).toHaveText(`${i} of ${total}`);
+        }
+
+        await this.closeImgButton.click();
+    }
+
+    async productBrand(value: string): Promise<string> {
+
+        return await this.brand.locator(`a:has-text('${value}')`).innerText() ?? ''
+    }
+
+    async codeOfProduct(): Promise<string> {
+
+        return await this.productCode.innerText() ?? ''
+
+    }
+
+    async availabilityOfProduct(value: string): Promise<string> {
+
+        const isInStock = await this.availabilityProduct.textContent();
+        const available = isInStock?.split(' ').slice(1).join(' ');
+
+        return available === value
+            ? `Availability: ${available}`
+            : `Product not in stock or limited stock`;
+
+    }
+
+    async priceWithoutTax(): Promise<number> {
+
+        const priceText = await this.priceBeforeTax.innerText();
+        const cleanPrice = priceText?.replace('Ex Tax: $', '').trim();
+
+        return parseFloat(cleanPrice ?? '0');
+
+    }
+
+    async priceWithATax():Promise<number>{
+
+    return await this.priceWithoutTax() * (1 + (2 / 100) + (20 / 100));
+    
+    //return parseFloat(price ?? '0');
+
+
+    }
 }
