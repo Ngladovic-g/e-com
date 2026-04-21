@@ -13,7 +13,7 @@ export class ProductComparisonPage {
     private readonly continueButton: Locator;
     private readonly breadcrumb: Locator;
     private readonly linkToShopingCart: Locator;
-    private readonly successfullyAddedMsg:Locator;
+    
 
 
 
@@ -28,7 +28,7 @@ export class ProductComparisonPage {
         this.continueButton = page.locator("div.pull-right>a.btn.btn-default");
         this.breadcrumb = page.locator(".breadcrumb a:has-text('Product Comparison')")
         this.linkToShopingCart = page.locator("a:has-text('shopping cart')");
-        this.successfullyAddedMsg = page.locator(".alert.alert-success.alert-dismissible");
+        
 
 
     }
@@ -148,4 +148,6 @@ export class ProductComparisonPage {
         await this.linkToShopingCart.click();
         return new ShoppinCartPage(this.page)
     }
+
+    
 }
