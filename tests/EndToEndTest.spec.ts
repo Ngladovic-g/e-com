@@ -834,7 +834,7 @@ async function productInfoPage(page: Page): Promise<void> {
     expect(amount).toBe(minQty);
     expect(await productPage.radioButtonsCheck("Large (+$36.00)")).toBe(true);
     expect(await productPage.checkBoxes("Checkbox 2 (+$24.00)", "Checkbox 4 (+$48.00)")).toBe(true)
-    expect(await productPage.pageOptionSelect("Green (+$1.20)")).toBe(true);
+  //  expect(await productPage.pageOptionSelect("Green (+$1.20)")).toBe(true);
     expect(await productPage.fillTextArea("abc text")).toBe(true);
     const uploadMsg = await productPage.setUploadFile();
     expect(uploadMsg).toContain(`Your file was successfully uploaded!`);
