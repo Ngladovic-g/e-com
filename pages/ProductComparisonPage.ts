@@ -59,7 +59,7 @@ export class ProductComparisonPage {
         for (let i = 0; i < buttons; i++) {
 
             const button = this.productsRemoveButtons.nth(0);
-            button.waitFor({ timeout: 3000 })
+            await button.waitFor({ timeout: 3000 })
             await button.click();
         }
         return await this.productNotchosenforCompare.innerText() ?? '';

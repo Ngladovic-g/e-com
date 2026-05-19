@@ -789,6 +789,13 @@ async function compareProduct(page: Page) {
 }
 async function productInfoPage(page: Page): Promise<void> {
 
+    const yearString:string = '2026';
+    const monthString:string = "December";
+    const dayString:string = "25";
+
+    const hourString:string = "06";
+    const minuteString:string = "55";
+
     const header = new HeaderPage(page);
     const search = new SearchPage(page)
     const productPage = new ProductDisplaypage(page);
@@ -813,6 +820,28 @@ async function productInfoPage(page: Page): Promise<void> {
     expect(`$${price.toFixed(2)}`).toBe(`$100.00`);
     const taxedPrice = await productPage.priceWithATax();
     expect(`$${taxedPrice.toFixed(2)}`).toBe(`$122.00`);
+    expect(await productPage.quantityOfProduct()).toContain(`Qty`);
+    expect(await productPage.getProductQuantity()).toBe("1");
+    expect(await productPage.setProdctQuantity("3")).toBe("3");
+    await header.productSearch("Apple Cinema 30");
+    expect(await productPage.isOnProductPage()).toContain(`Search - Apple Cinema 30`);
+    await search.clickOnProducImg(`Apple Cinema 30"`);
+    expect(await productPage.isOnProductPage()).toContain(`Apple Cinema 30"`);
+    expect(await productPage.minQuantity());
+    let [text, amount] = await productPage.minQuantity();
+    expect(await productPage.minQuantity()).toContain(text)
+    const minQty = await productPage.getProductQuantity();
+    expect(amount).toBe(minQty);
+    expect(await productPage.radioButtonsCheck("Large (+$36.00)")).toBe(true);
+    expect(await productPage.checkBoxes("Checkbox 2 (+$24.00)", "Checkbox 4 (+$48.00)")).toBe(true)
+  //  expect(await productPage.pageOptionSelect("Green (+$1.20)")).toBe(true);
+    expect(await productPage.fillTextArea("abc text")).toBe(true);
+    const uploadMsg = await productPage.setUploadFile();
+    expect(uploadMsg).toContain(`Your file was successfully uploaded!`);
+    expect(await productPage.setDate(yearString, "12", dayString)).toContain(`2026-12-25`)
+    expect(await productPage.pickDate(yearString, monthString, dayString)).toContain(`2026-12-25`);
+    expect(await productPage.setTime(hourString, minuteString)).toContain("06:55");
+    expect(await productPage.pickTimeViaBtn("10", "55")).toContain("10:55");
 
 
 }
