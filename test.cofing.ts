@@ -1,4 +1,5 @@
 
+
 export class testConfig{
 
  
@@ -9,4 +10,12 @@ export class testConfig{
 
     username1 = "Dean_Kuhlman63@gmail.com"
     password1 = "vAKs3s_pKh0X25l"
+
+    //
+    apiDev = "https://jsonplaceholder.typicode.com";
+    apiStaging = "";
+    apiProd = "";
+    apiUsername = "";
+    apiPassword = "";
+    
 }
